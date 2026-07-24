@@ -1,0 +1,125 @@
+export type Skill = { name: string; category: string; icon: string; tone?: string }
+
+export const skills: Skill[] = [
+  { name: 'Java', category: 'backend', icon: 'devicon-java-plain', tone: '#e44d26' },
+  { name: 'Spring Boot', category: 'backend', icon: 'devicon-spring-original', tone: '#6db33f' },
+  { name: 'Python', category: 'backend', icon: 'devicon-python-plain', tone: '#3776ab' },
+  { name: 'C / C++', category: 'backend', icon: 'devicon-cplusplus-plain', tone: '#00599c' },
+  { name: 'POO', category: 'backend', icon: '⌘', tone: '#ff3333' },
+  { name: 'APIs REST', category: 'backend', icon: 'API', tone: '#ff3333' },
+  { name: 'Web Scraping', category: 'backend', icon: 'WS', tone: '#ff3333' },
+  { name: 'SQL', category: 'backend', icon: 'devicon-mysql-original', tone: '#4479a1' },
+  { name: 'MongoDB', category: 'backend', icon: 'devicon-mongodb-plain', tone: '#47a248' },
+  { name: 'Redis', category: 'backend', icon: 'devicon-redis-plain', tone: '#dc382d' },
+  { name: 'JavaScript', category: 'frontend', icon: 'devicon-javascript-plain', tone: '#d5b900' },
+  { name: 'HTML', category: 'frontend', icon: 'devicon-html5-plain', tone: '#e34f26' },
+  { name: 'CSS', category: 'frontend', icon: 'devicon-css3-plain', tone: '#1572b6' },
+  { name: 'React', category: 'frontend', icon: 'devicon-react-original', tone: '#149eca' },
+  { name: 'Figma', category: 'frontend', icon: 'devicon-figma-plain', tone: '#a259ff' },
+  { name: 'Git', category: 'tools', icon: 'devicon-git-plain', tone: '#f05032' },
+  { name: 'GitHub', category: 'tools', icon: 'devicon-github-original', tone: '#181717' },
+  { name: 'Docker', category: 'tools', icon: 'devicon-docker-plain', tone: '#2496ed' },
+  { name: 'Linux / CLI', category: 'tools', icon: 'devicon-linux-plain', tone: '#111' },
+  { name: 'Bash', category: 'tools', icon: 'devicon-bash-plain', tone: '#4eaa25' },
+  { name: 'n8n', category: 'tools', icon: 'N8N', tone: '#ff6d5a' },
+  { name: 'Redes', category: 'tools', icon: 'NET', tone: '#0a66c2' },
+  { name: 'Cibersegurança', category: 'tools', icon: 'SEC', tone: '#111' },
+  { name: 'Security', category: 'tools', icon: 'SHD', tone: '#ff3333' },
+  { name: 'Vercel', category: 'tools', icon: 'devicon-vercel-original', tone: '#111' },
+  { name: 'Firebase', category: 'tools', icon: 'devicon-firebase-plain', tone: '#ffca28' },
+  { name: 'Google Cloud', category: 'tools', icon: 'devicon-googlecloud-plain', tone: '#4285f4' },
+  { name: 'Azure', category: 'tools', icon: 'devicon-azure-plain', tone: '#0078d4' },
+  { name: 'IA Generativa', category: 'other', icon: 'LLM', tone: '#7c3aed' },
+  { name: 'Arduino', category: 'other', icon: 'devicon-arduino-plain', tone: '#00878f' },
+  { name: 'ESP32 / CAM', category: 'other', icon: 'ESP', tone: '#ff3333' },
+  { name: 'Eletrônica', category: 'other', icon: 'HW', tone: '#f59e0b' },
+  { name: 'Sensor ultrassônico', category: 'other', icon: 'IO', tone: '#0ea5e9' },
+  { name: 'Manutenção de PCs', category: 'other', icon: 'PC', tone: '#111' },
+  { name: 'Power BI', category: 'other', icon: 'BI', tone: '#d4a900' },
+  { name: 'Inglês · Intermediário', category: 'other', icon: 'EN', tone: '#2563eb' },
+  { name: 'Espanhol · Avançado', category: 'other', icon: 'ES', tone: '#dc2626' },
+]
+
+export const projects = [
+  {
+    index: '01', title: 'API RESTful com Spring Boot',
+    description: 'Criação e consumo de APIs e microsserviços integrados a bancos de dados SQL para rotinas corporativas.',
+    tags: ['SPRING BOOT', 'JAVA', 'REST API', 'SQL'], image: '/api/placeholder/project-api.svg',
+    highlights: ['Arquitetura de APIs escaláveis', 'Integração persistente com SQL', 'Rotinas corporativas desacopladas', 'Boas práticas de microsserviços'],
+  },
+  {
+    index: '02', title: 'Automação Corporativa com n8n',
+    description: 'Automação de fluxos de trabalho ágeis, integração de dados e scripts para otimização de infraestrutura.',
+    tags: ['N8N', 'AUTOMAÇÃO', 'BASH', 'DEVOPS'], image: '/api/placeholder/project-n8n.svg',
+    highlights: ['Orquestração visual de processos', 'Integração entre APIs e dados', 'Scripts de apoio operacional', 'Redução de tarefas repetitivas'],
+  },
+  {
+    index: '03', title: 'Robótica e IoT com ESP32',
+    description: 'Integração de hardware envolvendo microcontroladores, monitoramento serial, módulos e sensores ultrassônicos de 4 pinos.',
+    tags: ['ESP32', 'ARDUINO', 'IOT', 'SENSORES'], image: '/api/placeholder/project-iot.svg',
+    highlights: ['Leitura de sensores em tempo real', 'Monitoramento via porta serial', 'Integração de módulos eletrônicos', 'Prototipagem com microcontroladores'],
+  },
+]
+
+export const certificates = [
+  {
+    index: '01',
+    title: 'Pacote Office Avançado',
+    issuer: 'Cursos ALFFA',
+    date: '2021 — 2022',
+    image: '/api/placeholder/certificate-office.svg',
+    description: 'Formação avançada nas principais ferramentas do Microsoft Office, com foco em produtividade, organização de dados, documentos profissionais e apresentações.',
+    tags: ['OFFICE', 'PRODUTIVIDADE', 'FERRAMENTAS'],
+  },
+  {
+    index: '02',
+    title: 'Informática Avançada',
+    issuer: 'Cursos ALFFA',
+    date: '2021 — 2022',
+    image: '/api/placeholder/certificate-it.svg',
+    description: 'Curso de informática avançada envolvendo sistemas operacionais, manutenção, configuração de computadores e uso técnico de ferramentas digitais.',
+    tags: ['HARDWARE', 'SISTEMAS', 'SUPORTE'],
+  },
+  {
+    index: '03',
+    title: 'Agentes de IA com n8n',
+    issuer: 'Rocketseat',
+    date: '07/2026',
+    image: '/certs/n8n_cert.png',
+    description: 'Curso voltado para a criação e gestão de agentes de Inteligência Artificial através do domínio da plataforma no-code n8n, abordando automações robustas e manipulação avançada de dados.',
+    tags: ['IA', 'N8N', 'AUTOMAÇÃO'],
+  },
+  {
+    index: '04',
+    title: 'Fundamentos da Programação Web',
+    issuer: 'Rocketseat',
+    date: '05/2026',
+    image: '/certs/web_fundamentals_cert.png',
+    description: 'Capacitação no funcionamento essencial da internet e da programação, cobrindo o papel do front-end, back-end, servidores, websites e fundamentos do mercado de tecnologia.',
+    tags: ['WEB', 'FRONTEND', 'BACKEND'],
+  },
+  {
+    index: '05',
+    title: 'Lógica de Programação',
+    issuer: 'Rocketseat',
+    date: '05/2026',
+    image: '/certs/logic_cert.png',
+    description: 'Formação com 30 horas de carga horária focada no raciocínio lógico-computacional, cobrindo pseudocódigo, estruturas condicionais e de repetição, depuração, leitura de código e boas práticas (refatoração e recursividade).',
+    tags: ['LÓGICA', 'ALGORITMOS', 'FUNDAMENTOS'],
+  },
+]
+
+export const experiences = [
+  {
+    role: 'Estagiário de Desenvolvimento Backend Java e DevOps', company: 'Defensoria Pública do Distrito Federal (DPDF)', date: '15/02/2026 — ATUAL', status: 'CURRENT', tone: '#22c55e',
+    items: ['Desenvolvimento de sistemas e rotinas corporativas com Java estruturado e Spring Boot.', 'Criação, gerenciamento e automação de APIs, microsserviços e fluxos integrados a bancos SQL.', 'Automação de fluxos de trabalho e infraestrutura ágil utilizando n8n.', 'Uso de terminal Linux/CLI e scripts no suporte à operação.'],
+  },
+  {
+    role: 'Estagiário de TI', company: 'Tribunal Superior do Trabalho (TST)', date: '07/01/2026 — 10/02/2026', status: 'TST', tone: '#a855f7',
+    items: ['Auxílio em demandas de tecnologia, infraestrutura de redes e suporte técnico interno do tribunal.'],
+  },
+  {
+    role: 'Estagiário de Suporte de TI / Desenvolvimento', company: 'B2G', date: '01/2025 — 06/2025', status: 'B2G', tone: '#f59e0b',
+    items: ['Desenvolvimento de sistemas em Java e Python para soluções corporativas internas.', 'Suporte a usuários e resolução de problemas complexos de hardware e software.', 'Configuração de sistemas operacionais e atendimento remoto via chamados.'],
+  },
+]
