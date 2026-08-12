@@ -163,8 +163,17 @@ export function Projects() {
   return <section id="projects" className="section shell" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}><SectionHeading index="02" eyebrow="PORTFOLIO" title="PROJETOS EM DESTAQUE" description="Projetos conceituais baseados nas minhas principais áreas de atuação: backend, automação e sistemas embarcados." />
     <Reveal className="project-tilt" delay={.1} scale>
       <Tilt className="" max={2}><article className={`project project--${direction > 0 ? 'next' : 'prev'}`} key={project.title}>
-      <div className="project__head"><div><h3>{project.title}</h3><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><span className="project__number">PROJECT::{project.index}</span></div>
-      <div className="project__body"><div className="project__image" data-cursor-text="EXPLORE"><img src={project.image} alt={`Placeholder do projeto ${project.title}`} loading="lazy" decoding="async" /></div><div className="project__copy"><p>{project.description}</p><h4>SYSTEM HIGHLIGHTS</h4><ul>{project.highlights.map((item) => <li key={item}><b>#</b>{item}</li>)}</ul></div></div>
+      <div className="project__head"><div><h3>{project.title}</h3><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><div className="project__meta">{project.link && <span className="project__badge"><i />LIVE</span>}<span className="project__number">PROJECT::{project.index}</span></div></div>
+      <div className="project__body"><div className="project__image" data-cursor-text={project.link ? 'ABRIR SITE' : 'EXPLORE'}>{project.link
+        ? <a href={project.link} target="_blank" rel="noreferrer noopener" aria-label={`Abrir ${project.title} em nova aba`}><img src={project.image} alt={`Prévia do projeto ${project.title}`} loading="lazy" decoding="async" /></a>
+        : <img src={project.image} alt={`Placeholder do projeto ${project.title}`} loading="lazy" decoding="async" />}</div><div className="project__copy"><p>{project.description}</p><h4>SYSTEM HIGHLIGHTS</h4><ul>{project.highlights.map((item) => <li key={item}><b>#</b>{item}</li>)}</ul>
+        {project.link && <div className="project__live">
+          <a className="project__live-cta" href={project.link} target="_blank" rel="noreferrer noopener" data-cursor-text="GO">ACESSAR PROJETO <b>→</b></a>
+          <span className="project__live-url"><i />{project.linkDisplay ?? project.link}</span>
+          {project.extraLinks?.map((extra) => <a className="project__live-alt" href={extra.href} target="_blank" rel="noreferrer noopener" key={extra.href}>{extra.label}</a>)}
+          {project.linkNote && <p className="project__live-note">{project.linkNote}</p>}
+        </div>}
+      </div></div>
       <div className="project__controls"><span>{String(active + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}</span><div><button aria-label="Projeto anterior" onClick={() => move(-1)}>←</button><button aria-label="Próximo projeto" onClick={() => move(1)}>→</button></div></div>
     </article></Tilt>
     </Reveal><div className="project-dots">{projects.map((item, index) => <button aria-label={`Abrir ${item.title}`} className={active === index ? 'active' : ''} onClick={() => { setDirection(index > active ? 1 : -1); setActive(index) }} key={item.title} />)}</div>

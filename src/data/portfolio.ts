@@ -40,21 +40,48 @@ export const skills: Skill[] = [
   { name: 'Espanhol · Avançado', category: 'other', icon: 'ES', tone: '#dc2626' },
 ]
 
-export const projects = [
+export type Project = {
+  index: string
+  title: string
+  description: string
+  tags: string[]
+  image: string
+  highlights: string[]
+  /** URL pública do projeto no ar. Quando presente, o card exibe o selo LIVE e o botão de acesso. */
+  link?: string
+  /** Endereço mostrado no card. Use quando a URL for longa ou for um IP sem domínio. */
+  linkDisplay?: string
+  /** Aviso curto exibido abaixo do botão de acesso. */
+  linkNote?: string
+  /** Links secundários (canal, repositório, etc.). */
+  extraLinks?: { label: string; href: string }[]
+}
+
+export const projects: Project[] = [
   {
-    index: '01', title: 'API RESTful com Spring Boot',
+    index: '01', title: 'Clube da Economia',
+    description: 'Plataforma de garimpo de promoções que analisa milhares de produtos diariamente e destaca apenas descontos reais, com busca, filtros por categoria e distribuição das ofertas por canal no Telegram.',
+    tags: ['EM PRODUÇÃO', 'WEB APP', 'SCRAPING', 'AUTOMAÇÃO'], image: '/api/placeholder/project-clube.svg',
+    highlights: ['Coleta e curadoria automática de ofertas', 'Busca e filtros por categoria de produto', 'Cálculo de desconto real sobre o preço cheio', 'Publicação das ofertas em canal do Telegram'],
+    link: 'http://147.15.8.223/',
+    linkDisplay: '147.15.8.223',
+    linkNote: 'Projeto hospedado em servidor próprio, acessível pelo IP direto — ainda sem domínio registrado, então o navegador abre em HTTP.',
+    extraLinks: [{ label: 'CANAL TELEGRAM', href: 'https://t.me/ClubDeconomia' }],
+  },
+  {
+    index: '02', title: 'API RESTful com Spring Boot',
     description: 'Criação e consumo de APIs e microsserviços integrados a bancos de dados SQL para rotinas corporativas.',
     tags: ['SPRING BOOT', 'JAVA', 'REST API', 'SQL'], image: '/api/placeholder/project-api.svg',
     highlights: ['Arquitetura de APIs escaláveis', 'Integração persistente com SQL', 'Rotinas corporativas desacopladas', 'Boas práticas de microsserviços'],
   },
   {
-    index: '02', title: 'Automação Corporativa com n8n',
+    index: '03', title: 'Automação Corporativa com n8n',
     description: 'Automação de fluxos de trabalho ágeis, integração de dados e scripts para otimização de infraestrutura.',
     tags: ['N8N', 'AUTOMAÇÃO', 'BASH', 'DEVOPS'], image: '/api/placeholder/project-n8n.svg',
     highlights: ['Orquestração visual de processos', 'Integração entre APIs e dados', 'Scripts de apoio operacional', 'Redução de tarefas repetitivas'],
   },
   {
-    index: '03', title: 'Robótica e IoT com ESP32',
+    index: '04', title: 'Robótica e IoT com ESP32',
     description: 'Integração de hardware envolvendo microcontroladores, monitoramento serial, módulos e sensores ultrassônicos de 4 pinos.',
     tags: ['ESP32', 'ARDUINO', 'IOT', 'SENSORES'], image: '/api/placeholder/project-iot.svg',
     highlights: ['Leitura de sensores em tempo real', 'Monitoramento via porta serial', 'Integração de módulos eletrônicos', 'Prototipagem com microcontroladores'],
