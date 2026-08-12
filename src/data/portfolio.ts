@@ -107,6 +107,15 @@ export const certificates = [
     description: 'Formação com 30 horas de carga horária focada no raciocínio lógico-computacional, cobrindo pseudocódigo, estruturas condicionais e de repetição, depuração, leitura de código e boas práticas (refatoração e recursividade).',
     tags: ['LÓGICA', 'ALGORITMOS', 'FUNDAMENTOS'],
   },
+  {
+    index: '06',
+    title: 'Introdução à IoT e à Transformação Digital',
+    issuer: 'Cisco Networking Academy',
+    date: '06/2026',
+    image: '/certs/cisco_iot_cert.png',
+    description: 'Certificação abordando os conceitos fundamentais da Internet das Coisas (IoT) e o impacto da transformação digital, incluindo interconexão de dispositivos, otimização de processos baseada em dados e inovações no ambiente de negócios corporativos e industriais.',
+    tags: ['IOT', 'TRANSFORMAÇÃO DIGITAL', 'CISCO'],
+  },
 ]
 
 export const experiences = [

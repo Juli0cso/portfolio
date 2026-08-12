@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { motion, useInView } from 'framer-motion'
+import { Document, Page, pdfjs } from 'react-pdf'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 import { certificates, experiences, projects, skills, type Skill } from '../data/portfolio'
 import { ArrowIcon, GithubIcon, LinkedinIcon, MailIcon, PhoneIcon } from './Icons'
 import { SectionHeading } from './Layout'
@@ -70,7 +75,7 @@ export function Hero() {
       <p className="eyebrow hero-enter">// SYSTEM.INIT</p>
       <h1 className="hero-enter"><DecodeText text="JÚLIO CÉSAR" /><span className="hero__surname">SOUSA OLIVEIRA</span></h1>
       <h2 className="hero-enter"><Typewriter words={['BACKEND JAVA', 'SPRING BOOT DEV', 'API ARCHITECT', 'DEVOPS & AUTOMATION']} /></h2>
-      <p className="hero__summary hero-enter">Estudante do 7º semestre de Engenharia da Computação, com foco em desenvolvimento Backend, Java, Spring Boot, APIs, automação e bancos de dados.</p>
+      <p className="hero__summary hero-enter">Estudante do 8º semestre de Engenharia da Computação, com foco em desenvolvimento Backend, Java, Spring Boot, APIs, automação e bancos de dados.</p>
       <p className="code-comment hero-enter">/* Construindo integrações corporativas, explorando IA generativa e transformando problemas em software. */</p>
       <div className="status-row hero-enter">
         <span><i><b /></i> STATUS: OPEN_TO_WORK</span>
@@ -84,7 +89,7 @@ export function Hero() {
       <div className="hero__actions hero-enter"><a className="btn btn--dark glitch-click" href="#projects">EXPLORE_PROJECTS</a><a className="btn btn--red glitch-click" href="/curriculo-julio-cesar.pdf" target="_blank">VIEW_RESUME</a></div>
       <div className="hero__location hero-enter"><span>SYS.LOC: BRASÍLIA, DF</span><span>LAT: 15.8128° S</span><span>LNG: 47.9294° W</span></div>
     </div>
-    <div className="hero__visual"><InteractiveCharacter /><div className="hero__index">JC&nbsp; /&nbsp; 07</div></div>
+    <div className="hero__visual"><InteractiveCharacter /><div className="hero__index">JC&nbsp; /&nbsp; 08</div></div>
     <a href="#skills" className="scroll-mark">SCROLL <i /></a>
   </section>
 }
@@ -93,8 +98,8 @@ export function Hero() {
 export function About() {
   return <section id="about" className="section shell"><SectionHeading index="04" eyebrow="PROFILE" title="SOBRE MIM" />
     <Reveal className="about-grid" delay={.1}>
-      <div className="about-terminal"><div className="terminal-bar"><span>PROFILE.README</span><span>● ● ●</span></div><p><em>01</em> Estudante do 7º semestre de Engenharia da Computação, com foco prático em Desenvolvimento Backend, Java e ecossistema Spring Boot. Atualmente estagiando na Defensoria Pública do Distrito Federal (DPDF).</p><p><em>02</em> Tenho experiência com automação de processos, criação e consumo de APIs, web scraping e banco de dados. Gosto de resolver problemas usando código, construindo integrações para sistemas corporativos, usando IA generativa ou trabalhando com robótica e microcontroladores.</p><p><em>03</em> Busco oportunidades para crescer como desenvolvedor backend e aplicar meus conhecimentos em arquitetura de software.</p></div>
-      <div className="about-stats"><article><strong>07</strong><span>SEMESTRE ATUAL</span></article><article><strong>03</strong><span>EXPERIÊNCIAS</span></article><article><strong>2027</strong><span>CONCLUSÃO PREVISTA</span></article><article><strong>JAVA</strong><span>FOCO PRINCIPAL</span></article></div>
+      <div className="about-terminal"><div className="terminal-bar"><span>PROFILE.README</span><span>● ● ●</span></div><p><em>01</em> Estudante do 8º semestre de Engenharia da Computação, com foco prático em Desenvolvimento Backend, Java e ecossistema Spring Boot. Atualmente estagiando na Defensoria Pública do Distrito Federal (DPDF).</p><p><em>02</em> Tenho experiência com automação de processos, criação e consumo de APIs, web scraping e banco de dados. Gosto de resolver problemas usando código, construindo integrações para sistemas corporativos, usando IA generativa ou trabalhando com robótica e microcontroladores.</p><p><em>03</em> Busco oportunidades para crescer como desenvolvedor backend e aplicar meus conhecimentos em arquitetura de software.</p></div>
+      <div className="about-stats"><article><strong>08</strong><span>SEMESTRE ATUAL</span></article><article><strong>03</strong><span>EXPERIÊNCIAS</span></article><article><strong>2027</strong><span>CONCLUSÃO PREVISTA</span></article><article><strong>JAVA</strong><span>FOCO PRINCIPAL</span></article></div>
     </Reveal>
   </section>
 }
@@ -193,7 +198,16 @@ export function Certificates() {
   useEffect(() => { if (paused) return; const timer = window.setInterval(() => move(1), 6000); return () => window.clearInterval(timer) }, [paused, active])
   return <section id="certificates" className="section shell certificates" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}><SectionHeading index="05" eyebrow="QUALIFICATIONS" title="CERTIFICADOS" description="Cursos e qualificações que complementam minha formação técnica e experiência profissional." />
     <Reveal delay={.1} scale><article className={`certificate-card certificate-card--${direction > 0 ? 'next' : 'prev'}`} key={certificate.title}>
-      <div className="certificate-card__image" data-cursor-text="VIEW"><img src={certificate.image} alt={`Placeholder do certificado ${certificate.title}`} loading="lazy" decoding="async" /><span>IMAGE_SLOT::{certificate.index}</span></div>
+      <div className="certificate-card__image" data-cursor-text="VIEW">
+        {certificate.image.endsWith('.pdf') ? (
+          <Document file={certificate.image} loading={<div style={{ padding: '2rem', color: '#888' }}>Carregando certificado...</div>}>
+            <Page pageNumber={1} renderTextLayer={false} renderAnnotationLayer={false} width={800} />
+          </Document>
+        ) : (
+          <img src={certificate.image} alt={`Placeholder do certificado ${certificate.title}`} loading="lazy" decoding="async" />
+        )}
+        <span>IMAGE_SLOT::{certificate.index}</span>
+      </div>
       <div className="certificate-card__copy"><div className="certificate-card__meta"><span>// {certificate.date}</span><b>[ VERIFIED_COURSE ]</b></div><small>{certificate.issuer}</small><h3>{certificate.title}</h3><i /><p>{certificate.description}</p><div className="tags">{certificate.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>
       <span className="certificate-card__corner certificate-card__corner--tl" /><span className="certificate-card__corner certificate-card__corner--br" />
     </article></Reveal>
@@ -267,7 +281,7 @@ export function Experience() {
       <div className="journey__portrait" style={{ background: 'transparent' }} data-cursor-text="JÚLIO">
         <model-viewer 
           ref={modelRef}
-          src="/gordao-portrait-full-bg-3d.glb" 
+          src="/gordao-low-depth-portrait.glb" 
           alt="3D Portrait of Júlio César" 
           loading="lazy"
           disable-zoom
@@ -276,7 +290,7 @@ export function Experience() {
           orientation="180deg 0deg 0deg"
           style={{ width: '100%', height: '100%', minHeight: '300px', backgroundColor: 'transparent' }}
         ></model-viewer>
-        <span>gordao-portrait-full-bg-3d.glb</span>
+        <span>gordao-low-depth-portrait.glb</span>
       </div>
       <div className="timeline">{experiences.map((experience, index) => (
         <Reveal key={experience.role} delay={index * .12}>
@@ -291,7 +305,7 @@ export function Experience() {
 export function Education() {
   return <section id="education" className="section shell"><SectionHeading index="06" eyebrow="ACADEMIC_LOG" title="FORMAÇÃO ACADÊMICA" />
     <Reveal delay={.1} scale>
-      <article className="education-card"><div className="education-card__meta"><span>// 2023 — 2027</span><b>STATUS: EM_ANDAMENTO</b></div><h3>GRADUAÇÃO EM ENGENHARIA DA COMPUTAÇÃO</h3><p>UNICEUB — CENTRO UNIVERSITÁRIO DE BRASÍLIA · ASA NORTE</p><div className="education-card__line"><span>Cursando o 7º semestre</span><span>PREVISÃO DE CONCLUSÃO: JULHO/2027</span></div><div className="education-progress"><i /></div><small>ACADEMIC.PROGRESS / 07_OF_10_SEMESTERS</small></article>
+      <article className="education-card"><div className="education-card__meta"><span>// 2023 — 2027</span><b>STATUS: EM_ANDAMENTO</b></div><h3>GRADUAÇÃO EM ENGENHARIA DA COMPUTAÇÃO</h3><p>UNICEUB — CENTRO UNIVERSITÁRIO DE BRASÍLIA · ASA NORTE</p><div className="education-card__line"><span>Cursando o 8º semestre</span><span>PREVISÃO DE CONCLUSÃO: JULHO/2027</span></div><div className="education-progress"><i /></div><small>ACADEMIC.PROGRESS / 08_OF_10_SEMESTERS</small></article>
     </Reveal>
   </section>
 }
