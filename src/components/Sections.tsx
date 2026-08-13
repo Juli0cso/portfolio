@@ -6,6 +6,7 @@ import 'react-pdf/dist/Page/TextLayer.css'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 import { certificates, experiences, projects, skills, type Skill } from '../data/portfolio'
+import type { CodeSnippet } from '../data/clubeSnippets'
 import { ArrowIcon, GithubIcon, LinkedinIcon, MailIcon, PhoneIcon } from './Icons'
 import { SectionHeading } from './Layout'
 import { DecodeText, Tilt, Typewriter } from './Effects'
@@ -153,30 +154,165 @@ function SkillCard({ skill, index }: { skill: Skill; index: number }) {
 }
 
 /* ─── Projects ───────────────────────────────────────────────────────────── */
+/* A prévia embute o site real. Renderizamos num viewport de desktop e reduzimos
+   por escala, senão a aplicação cairia no layout mobile dentro da caixa. */
+const EMBED_VIEWPORT = { width: 1440, height: 900 }
+
+/* Só embutimos quando faz sentido:
+   - um iframe http:// dentro de uma página https:// é bloqueado como mixed content;
+   - abaixo de 768px a caixa reduziria o site a ~23%, ilegível — nesse caso o
+     mockup estático + botão de tela cheia entregam uma experiência melhor.
+   Em ambos os casos caímos no mockup. */
+const EMBED_QUERY = '(min-width: 768px)'
+
+function useCanEmbed(url?: string) {
+  const [canEmbed, setCanEmbed] = useState(false)
+  useEffect(() => {
+    if (!url || (window.location.protocol === 'https:' && url.startsWith('http://'))) return setCanEmbed(false)
+    const media = window.matchMedia(EMBED_QUERY)
+    const sync = () => setCanEmbed(media.matches)
+    sync()
+    media.addEventListener('change', sync)
+    return () => media.removeEventListener('change', sync)
+  }, [url])
+  return canEmbed
+}
+
+/* A prévia embutida é deliberadamente NÃO interativa: um iframe cross-origin
+   engole os eventos de mouse da página-mãe, o que congela o cursor customizado e
+   faz a seção perder o mouseleave (despausando o carrossel por baixo do usuário).
+   O site continua ao vivo aqui; quem quiser usar abre em tela cheia. */
+function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpen: () => void }) {
+  const box = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0)
+  useEffect(() => {
+    const node = box.current
+    if (!node) return
+    const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / EMBED_VIEWPORT.width))
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+  return <div className="project__embed" ref={box}>
+    {scale > 0 && <iframe
+      src={src} title={title} loading="lazy" referrerPolicy="no-referrer" tabIndex={-1} aria-hidden="true"
+      sandbox="allow-scripts allow-same-origin allow-forms"
+      /* `zoom` e não `transform: scale()`: o transform encolhe só o desenho e deixa a
+         caixa de layout em 1440px, que transborda o card e — onde o recorte do
+         overflow não vale para hit-test — rouba o clique dos botões ao lado. */
+      style={{ width: EMBED_VIEWPORT.width, height: EMBED_VIEWPORT.height, zoom: scale }}
+    />}
+    <button className="project__embed-open" onClick={onOpen} data-cursor-text="ABRIR" aria-label={`Abrir ${title} em tela cheia`}>
+      <span>ABRIR EM TELA CHEIA <b>⤢</b></span>
+    </button>
+  </div>
+}
+
+/* Realce de sintaxe mínimo, sem dependência: quebra a linha em comentário /
+   string / anotação / palavra-chave / número e deixa o resto como texto. A ordem
+   importa — comentários e strings primeiro, senão uma palavra-chave dentro de
+   uma string seria pintada. */
+const CODE_RULES: { cls: string; re: RegExp }[] = [
+  { cls: 'tk-comment', re: /(\/\/[^\n]*|--[^\n]*|\/\*[\s\S]*?\*\/)/ },
+  { cls: 'tk-string', re: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/ },
+  { cls: 'tk-annot', re: /(@[A-Za-z_][A-Za-z0-9_]*)/ },
+  { cls: 'tk-key', re: /\b(public|private|protected|class|void|return|if|else|for|while|new|throw|final|static|synchronized|instanceof|continue|import|package|try|catch|null|true|false|int|long|double|String|CREATE|TABLE|ALTER|INSERT|INTO|VALUES|SELECT|UPDATE|DELETE|TRIGGER|FUNCTION|RETURNS|BEGIN|END|IF|THEN|OR|AND|NOT|EXISTS|POLICY|ENABLE|ROW|LEVEL|SECURITY|LANGUAGE|AFTER|BEFORE|EXECUTE|ON|USING|REFERENCES|PRIMARY|KEY|DEFAULT|CASCADE)\b/ },
+  { cls: 'tk-num', re: /\b(\d+(?:\.\d+)?L?)\b/ },
+]
+const CODE_SPLITTER = new RegExp(CODE_RULES.map((rule) => rule.re.source).join('|'), 'g')
+
+function highlight(line: string) {
+  const parts: ReactNode[] = []
+  let cursor = 0
+  for (const match of line.matchAll(CODE_SPLITTER)) {
+    const index = match.slice(1).findIndex((group) => group !== undefined)
+    if (index < 0) continue
+    if (match.index > cursor) parts.push(line.slice(cursor, match.index))
+    parts.push(<span className={CODE_RULES[index].cls} key={match.index}>{match[0]}</span>)
+    cursor = match.index + match[0].length
+  }
+  if (cursor < line.length) parts.push(line.slice(cursor))
+  return parts
+}
+
+function CodeViewer({ snippets, title, onClose }: { snippets: CodeSnippet[]; title: string; onClose: () => void }) {
+  const [active, setActive] = useState(0)
+  const snippet = snippets[active]
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
+    const previousOverflow = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+    window.addEventListener('keydown', key)
+    return () => { window.removeEventListener('keydown', key); document.documentElement.style.overflow = previousOverflow }
+  }, [onClose])
+  return <motion.div className="code-viewer" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: .2 }} role="dialog" aria-modal="true" aria-label={`Código de ${title}`}>
+    <div className="code-viewer__bar">
+      <span><i />{title} · CÓDIGO</span>
+      <button onClick={onClose} aria-label="Fechar visualizador de código">FECHAR <b>✕</b></button>
+    </div>
+    <div className="code-viewer__tabs" role="tablist">
+      {snippets.map((item, index) => <button key={item.label} role="tab" aria-selected={index === active} className={index === active ? 'active' : ''} onClick={() => setActive(index)}>{item.label}</button>)}
+    </div>
+    <div className="code-viewer__body">
+      <div className="code-viewer__meta">
+        <span className="code-viewer__path">{snippet.file}</span>
+        <p>{snippet.note}</p>
+      </div>
+      <pre className="code-viewer__code"><code>{snippet.code.split('\n').map((line, index) => <span className="code-line" key={index}><i>{String(index + 1).padStart(2, '0')}</i><em>{highlight(line)}</em></span>)}</code></pre>
+    </div>
+    <p className="code-viewer__foot">Trechos do repositório privado, revisados manualmente. Configurações sensíveis são injetadas por variável de ambiente e não aparecem no código.</p>
+  </motion.div>
+}
+
+function FullscreenPreview({ src, title, onClose }: { src: string; title: string; onClose: () => void }) {
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
+    const previousOverflow = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+    window.addEventListener('keydown', key)
+    return () => { window.removeEventListener('keydown', key); document.documentElement.style.overflow = previousOverflow }
+  }, [onClose])
+  return <motion.div className="project-fullscreen" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .25 }} role="dialog" aria-modal="true" aria-label={title}>
+    <div className="project-fullscreen__bar">
+      <span><i />{title}</span>
+      <button onClick={onClose} aria-label="Fechar prévia em tela cheia">FECHAR <b>✕</b></button>
+    </div>
+    <iframe src={src} title={`${title} em tela cheia`} sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerPolicy="no-referrer" />
+  </motion.div>
+}
+
 export function Projects() {
   const [active, setActive] = useState(0)
   const [direction, setDirection] = useState(1)
   const [paused, setPaused] = useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
+  const [showCode, setShowCode] = useState(false)
+  /* Uma vez que a pessoa escolhe um projeto, o autoplay para de vez: continuar
+     girando trocaria o card por baixo de quem está lendo ou clicando. */
+  const [engaged, setEngaged] = useState(false)
   const project = projects[active]
+  const canEmbed = useCanEmbed(project.link)
   const move = (step: number) => { setDirection(step); setActive((current) => (current + step + projects.length) % projects.length) }
-  useEffect(() => { if (paused) return; const timer = window.setInterval(() => move(1), 5000); return () => window.clearInterval(timer) }, [paused, active])
+  const pick = (step: number) => { setEngaged(true); move(step) }
+  useEffect(() => { if (paused || fullscreen || engaged) return; const timer = window.setInterval(() => move(1), 5000); return () => window.clearInterval(timer) }, [paused, active, fullscreen, engaged])
   return <section id="projects" className="section shell" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}><SectionHeading index="02" eyebrow="PORTFOLIO" title="PROJETOS EM DESTAQUE" description="Projetos conceituais baseados nas minhas principais áreas de atuação: backend, automação e sistemas embarcados." />
     <Reveal className="project-tilt" delay={.1} scale>
       <Tilt className="" max={2}><article className={`project project--${direction > 0 ? 'next' : 'prev'}`} key={project.title}>
       <div className="project__head"><div><h3>{project.title}</h3><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><div className="project__meta">{project.link && <span className="project__badge"><i />LIVE</span>}<span className="project__number">PROJECT::{project.index}</span></div></div>
-      <div className="project__body"><div className="project__image" data-cursor-text={project.link ? 'ABRIR SITE' : 'EXPLORE'}>{project.link
-        ? <a href={project.link} target="_blank" rel="noreferrer noopener" aria-label={`Abrir ${project.title} em nova aba`}><img src={project.image} alt={`Prévia do projeto ${project.title}`} loading="lazy" decoding="async" /></a>
-        : <img src={project.image} alt={`Placeholder do projeto ${project.title}`} loading="lazy" decoding="async" />}</div><div className="project__copy"><p>{project.description}</p><h4>SYSTEM HIGHLIGHTS</h4><ul>{project.highlights.map((item) => <li key={item}><b>#</b>{item}</li>)}</ul>
+      <div className="project__body"><div className={`project__image ${project.link && canEmbed ? 'project__image--live' : ''}`} data-cursor-text={project.link && canEmbed ? '' : 'EXPLORE'}>{project.link && canEmbed
+        ? <LivePreview src={project.link} title={project.title} onOpen={() => setFullscreen(true)} />
+        : <img src={project.image} alt={`Prévia do projeto ${project.title}`} loading="lazy" decoding="async" />}</div><div className="project__copy"><p>{project.description}</p><h4>SYSTEM HIGHLIGHTS</h4><ul>{project.highlights.map((item) => <li key={item}><b>#</b>{item}</li>)}</ul>
         {project.link && <div className="project__live">
-          <a className="project__live-cta" href={project.link} target="_blank" rel="noreferrer noopener" data-cursor-text="GO">ACESSAR PROJETO <b>→</b></a>
-          <span className="project__live-url"><i />{project.linkDisplay ?? project.link}</span>
+          <button className="project__live-cta" onClick={() => setFullscreen(true)} data-cursor-text="FULL">{project.linkLabel ?? 'ABRIR EM TELA CHEIA'} <b>⤢</b></button>
+          {project.codeSnippets?.length ? <button className="project__live-alt" onClick={() => setShowCode(true)} data-cursor-text="CODE">VER CÓDIGO <b>{'{ }'}</b></button> : null}
           {project.extraLinks?.map((extra) => <a className="project__live-alt" href={extra.href} target="_blank" rel="noreferrer noopener" key={extra.href}>{extra.label}</a>)}
           {project.linkNote && <p className="project__live-note">{project.linkNote}</p>}
         </div>}
       </div></div>
-      <div className="project__controls"><span>{String(active + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}</span><div><button aria-label="Projeto anterior" onClick={() => move(-1)}>←</button><button aria-label="Próximo projeto" onClick={() => move(1)}>→</button></div></div>
+      <div className="project__controls"><span>{String(active + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}</span><div><button aria-label="Projeto anterior" onClick={() => pick(-1)}>←</button><button aria-label="Próximo projeto" onClick={() => pick(1)}>→</button></div></div>
     </article></Tilt>
-    </Reveal><div className="project-dots">{projects.map((item, index) => <button aria-label={`Abrir ${item.title}`} className={active === index ? 'active' : ''} onClick={() => { setDirection(index > active ? 1 : -1); setActive(index) }} key={item.title} />)}</div>
+    </Reveal><div className="project-dots">{projects.map((item, index) => <button aria-label={`Abrir ${item.title}`} className={active === index ? 'active' : ''} onClick={() => { setEngaged(true); setDirection(index > active ? 1 : -1); setActive(index) }} key={item.title} />)}</div>
+    {fullscreen && project.link && <FullscreenPreview src={project.link} title={project.title} onClose={() => setFullscreen(false)} />}
+    {showCode && project.codeSnippets?.length ? <CodeViewer snippets={project.codeSnippets} title={project.title} onClose={() => setShowCode(false)} /> : null}
   </section>
 }
 

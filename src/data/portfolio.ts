@@ -1,3 +1,5 @@
+import { clubeSnippets, type CodeSnippet } from './clubeSnippets'
+
 export type Skill = { name: string; category: string; icon: string; tone?: string }
 
 export const skills: Skill[] = [
@@ -47,26 +49,29 @@ export type Project = {
   tags: string[]
   image: string
   highlights: string[]
-  /** URL pública do projeto no ar. Quando presente, o card exibe o selo LIVE e o botão de acesso. */
+  /** URL do projeto no ar. Quando presente, o card exibe o selo LIVE e a prévia navegável. */
   link?: string
-  /** Endereço mostrado no card. Use quando a URL for longa ou for um IP sem domínio. */
-  linkDisplay?: string
-  /** Aviso curto exibido abaixo do botão de acesso. */
+  /** Rótulo do botão que abre a prévia em tela cheia. */
+  linkLabel?: string
+  /** Nota curta exibida abaixo dos botões. */
   linkNote?: string
   /** Links secundários (canal, repositório, etc.). */
   extraLinks?: { label: string; href: string }[]
+  /** Trechos de código exibidos no visualizador. Curados e revisados à mão. */
+  codeSnippets?: CodeSnippet[]
 }
 
 export const projects: Project[] = [
   {
     index: '01', title: 'Clube da Economia',
-    description: 'Plataforma de garimpo de promoções que analisa milhares de produtos diariamente e destaca apenas descontos reais, com busca, filtros por categoria e distribuição das ofertas por canal no Telegram.',
-    tags: ['EM PRODUÇÃO', 'WEB APP', 'SCRAPING', 'AUTOMAÇÃO'], image: '/api/placeholder/project-clube.svg',
-    highlights: ['Coleta e curadoria automática de ofertas', 'Busca e filtros por categoria de produto', 'Cálculo de desconto real sobre o preço cheio', 'Publicação das ofertas em canal do Telegram'],
+    description: 'Plataforma de garimpo de promoções em produção: API REST em Spring Boot integrada à API do Mercado Livre, coleta orquestrada por n8n, histórico de preço em Postgres e frontend React, tudo containerizado em VPS própria.',
+    tags: ['EM PRODUÇÃO', 'SPRING BOOT', 'JAVA', 'POSTGRES', 'DOCKER', 'N8N'], image: '/api/placeholder/project-clube.svg',
+    highlights: ['API REST com integração OAuth ao Mercado Livre', 'Job agendado de atualização de preços', 'Histórico auditado por trigger no banco', 'Webhook autenticado recebendo ofertas do n8n'],
     link: 'http://147.15.8.223/',
-    linkDisplay: '147.15.8.223',
-    linkNote: 'Projeto hospedado em servidor próprio, acessível pelo IP direto — ainda sem domínio registrado, então o navegador abre em HTTP.',
-    extraLinks: [{ label: 'CANAL TELEGRAM', href: 'https://t.me/ClubDeconomia' }],
+    linkLabel: 'ABRIR EM TELA CHEIA',
+    linkNote: 'A prévia acima é a aplicação real rodando ao vivo — pode navegar por ela aqui mesmo. Infraestrutura própria em VPS com nginx, mantida e publicada por mim.',
+    extraLinks: [{ label: 'CANAL DE OFERTAS', href: 'https://t.me/ClubDeconomia' }],
+    codeSnippets: clubeSnippets,
   },
   {
     index: '02', title: 'API RESTful com Spring Boot',

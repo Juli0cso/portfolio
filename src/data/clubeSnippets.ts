@@ -1,0 +1,216 @@
+/* Trechos curados do Clube da Economia, exibidos no visualizador de código do
+   portfólio. Copiados do repositório privado e revisados manualmente: nenhum
+   valor de credencial aparece aqui — as configurações sensíveis são injetadas
+   por variável de ambiente e ficam representadas apenas pela chave. */
+
+export type CodeSnippet = {
+  label: string
+  file: string
+  lang: 'java' | 'sql'
+  note: string
+  code: string
+}
+
+export const clubeSnippets: CodeSnippet[] = [
+  {
+    label: 'OAUTH + CACHE',
+    file: 'services/MercadoLivreService.java',
+    lang: 'java',
+    note: 'Autenticação client_credentials na API do Mercado Livre. O token é reaproveitado enquanto válido e renovado com 60s de margem, evitando uma ida à rede a cada chamada.',
+    code: `@Service
+public class MercadoLivreService {
+
+    @Value("\${app.ml.affiliate.app-id}")
+    private String appId;
+
+    @Value("\${app.ml.affiliate.client-secret}")
+    private String clientSecret;          // injetado por variável de ambiente
+
+    private String accessToken = null;
+    private long tokenExpiresAt = 0;
+
+    private synchronized String getAccessToken() {
+        // token ainda válido: reaproveita sem ir à rede
+        if (accessToken != null && System.currentTimeMillis() < tokenExpiresAt) {
+            return accessToken;
+        }
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "client_credentials");
+        form.add("client_id", appId);
+        form.add("client_secret", clientSecret);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+                "https://api.mercadolibre.com/oauth/token",
+                new HttpEntity<>(form, headers), Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            this.accessToken = (String) response.getBody().get("access_token");
+            long expiresIn = ((Number) response.getBody().get("expires_in")).longValue();
+            // 60s de margem para não usar um token que expira em trânsito
+            this.tokenExpiresAt = System.currentTimeMillis() + ((expiresIn - 60) * 1000L);
+            return accessToken;
+        }
+
+        throw new RuntimeException("Não foi possível gerar o token do Mercado Livre");
+    }
+}`,
+  },
+  {
+    label: 'BUSCA EM LOTE',
+    file: 'services/MercadoLivreService.java',
+    lang: 'java',
+    note: 'Consulta de preços em lote: uma requisição para N produtos em vez de N requisições. O endpoint multi-get responde por item, então cada resultado é validado individualmente antes de entrar no mapa.',
+    code: `public Map<String, Double> getProductsPrices(List<String> mlIds) {
+    if (mlIds == null || mlIds.isEmpty()) return Collections.emptyMap();
+
+    String url = "https://api.mercadolibre.com/items?ids=" + String.join(",", mlIds);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(getAccessToken());
+
+    Map<String, Double> prices = new HashMap<>();
+
+    ResponseEntity<List> response = restTemplate.exchange(
+            url, HttpMethod.GET, new HttpEntity<>(headers), List.class);
+
+    if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+        for (Object itemObj : response.getBody()) {
+            // o multi-get devolve um status por item: só aproveita os 200
+            if (itemObj instanceof Map itemMap
+                    && itemMap.get("code") instanceof Number code
+                    && code.intValue() == 200) {
+
+                Map<?, ?> body = (Map<?, ?>) itemMap.get("body");
+                if (body != null && body.get("id") instanceof String id
+                        && body.get("price") instanceof Number price) {
+                    prices.put(id, price.doubleValue());
+                }
+            }
+        }
+    }
+    return prices;
+}`,
+  },
+  {
+    label: 'JOB AGENDADO',
+    file: 'jobs/PriceUpdateScheduler.java',
+    lang: 'java',
+    note: 'Rotina diária que revisa os preços cadastrados. Fica atrás de uma flag de configuração, grava só quando o preço mudou de fato, e isola a falha por produto para que um item quebrado não derrube o lote inteiro.',
+    code: `@Component
+@ConditionalOnProperty(name = "app.price-update.enabled", havingValue = "true")
+@RequiredArgsConstructor
+public class PriceUpdateScheduler {
+
+    private final ProductRepository productRepository;
+    private final MercadoLivreService mercadoLivreService;
+
+    @Scheduled(cron = "0 0 3 * * *")   // todo dia às 03:00
+    public void updateProductPrices() {
+        List<Product> products = productRepository.findAll();
+        int updated = 0;
+
+        for (Product product : products) {
+            try {
+                if (product.getMlId() == null || product.getMlId().isEmpty()) continue;
+
+                Double newPrice = mercadoLivreService.getProductPrice(product.getMlId());
+
+                // só escreve no banco se o preço realmente mudou
+                if (newPrice != null && !newPrice.equals(product.getPrice())) {
+                    product.setPrice(newPrice);
+                    productRepository.save(product);
+                    updated++;
+                }
+            } catch (Exception e) {
+                // falha em um produto não interrompe a rotina
+                log.error("Erro ao atualizar {}: {}", product.getMlId(), e.getMessage());
+            }
+        }
+
+        log.info("Rotina concluída. {} produtos atualizados.", updated);
+    }
+}`,
+  },
+  {
+    label: 'WEBHOOK n8n',
+    file: 'controllers/WebhookController.java',
+    lang: 'java',
+    note: 'Porta de entrada das ofertas coletadas pelo n8n. Valida o token do cabeçalho antes de qualquer processamento e recusa payload incompleto com 400, separando erro do cliente de erro do servidor.',
+    code: `@RestController
+@RequestMapping("/api/webhook/produtos")
+@RequiredArgsConstructor
+public class WebhookController {
+
+    private final WebhookService webhookService;
+
+    @PostMapping
+    public ResponseEntity<Object> receiveProduct(
+            @RequestHeader("X-N8N-Token") String token,
+            @RequestBody ProductRequestDTO dto) {
+
+        // autentica antes de tocar no corpo da requisição
+        if (!webhookService.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Invalid Token"));
+        }
+
+        if (dto.getMlId() == null || dto.getMlId().isBlank()
+                || dto.getTitle() == null || dto.getTitle().isBlank()
+                || dto.getCleanedPrice() == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "mlId, title e price são obrigatórios"));
+        }
+
+        Product product = new Product();
+        product.setMlId(dto.getMlId());
+        product.setTitle(dto.getTitle());
+        product.setPrice(dto.getCleanedPrice());
+        product.setOriginalPrice(dto.getCleanedOriginalPrice());
+        product.setDiscount(dto.getDiscount());
+        product.setAffiliateUrl(dto.getAffiliateUrl());
+
+        webhookService.saveProductFromN8n(product);
+        return ResponseEntity.ok(Map.of("message", "Product saved successfully"));
+    }
+}`,
+  },
+  {
+    label: 'HISTÓRICO DE PREÇO',
+    file: 'migrations/price_history_and_filters.sql',
+    lang: 'sql',
+    note: 'O histórico é registrado pelo próprio banco, por trigger: qualquer caminho que altere o preço fica auditado, sem depender de a aplicação lembrar de gravar. É o que sustenta o cálculo de desconto real sobre o preço cheio.',
+    code: `CREATE TABLE IF NOT EXISTS public.product_price_history (
+    id         BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+    price      DOUBLE PRECISION NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
+);
+
+ALTER TABLE public.product_price_history ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public read access to price history"
+ON public.product_price_history FOR SELECT USING (true);
+
+CREATE OR REPLACE FUNCTION public.log_product_price_change()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- registra na inserção e sempre que o preço mudar de valor
+    IF (TG_OP = 'INSERT')
+       OR (TG_OP = 'UPDATE' AND NEW.price IS DISTINCT FROM OLD.price) THEN
+        INSERT INTO public.product_price_history (product_id, price, created_at)
+        VALUES (NEW.id, NEW.price, now());
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trigger_log_price_change
+AFTER INSERT OR UPDATE OF price ON public.products
+FOR EACH ROW
+EXECUTE FUNCTION public.log_product_price_change();`,
+  },
+]

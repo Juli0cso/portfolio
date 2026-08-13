@@ -342,9 +342,13 @@ img { display: block; max-width: 100%; }
 .skill-tooltip__arrow { display: block; width: 10px; height: 10px; margin: -5px auto 0; background: var(--accent); transform: rotate(45deg); border-right: 1px solid var(--red); border-bottom: 1px solid var(--red); }
 
 /* projects */
-.project-tilt { perspective: 1400px; }
-.tilt-card { position: relative; transform-style: preserve-3d; }
-.tilt-card > :last-child { transform: rotateX(var(--tilt-x,0)) rotateY(var(--tilt-y,0)); transition: transform .15s ease; }
+/* A perspectiva mora no transform do próprio elemento girado (ver .tilt-card),
+   e não aqui como propriedade do ancestral: a combinação `perspective` no pai +
+   `preserve-3d` no meio fazia o Chrome hit-testar os descendentes fora do lugar,
+   e todo clique nos botões do card caía no .tilt-card. */
+.project-tilt { position: relative; }
+.tilt-card { position: relative; }
+.tilt-card > :last-child { transform: perspective(1400px) rotateX(var(--tilt-x,0)) rotateY(var(--tilt-y,0)); transition: transform .15s ease; }
 .tilt-shine { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: radial-gradient(circle at var(--shine-x,50%) var(--shine-y,50%), rgba(255,255,255,.18), transparent 32%); opacity: 0; transition: opacity .2s; }
 .tilt-card:hover .tilt-shine { opacity: 1; }
 .project { position: relative; padding: 32px; background: var(--secondary); border: 2px solid var(--accent); box-shadow: 7px 7px 0 var(--accent); overflow: hidden; }
@@ -372,9 +376,63 @@ img { display: block; max-width: 100%; }
 .project__live-cta:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent); }
 .project__live-alt { padding: 12px 14px; border: 1px solid var(--border-strong); color: var(--accent); font: 700 9px/1 var(--mono); letter-spacing: .1em; text-decoration: none; transition: .15s; }
 .project__live-alt:hover { border-color: var(--red); color: var(--red); }
-.project__live-url { display: inline-flex; align-items: center; gap: 8px; padding: 11px 13px; border: 1px dashed var(--border-strong); color: var(--muted); font: 500 10px/1 var(--mono); letter-spacing: .04em; }
-.project__live-url i { width: 5px; height: 5px; background: var(--muted); }
 .project__live-note { width: 100%; margin: 4px 0 0; color: var(--muted); font: 500 9px/1.6 var(--mono); letter-spacing: .04em; }
+button.project__live-cta { cursor: none; }
+
+/* prévia ao vivo: iframe renderizado em viewport desktop e reduzido por escala */
+.project__image--live { background: var(--primary); }
+.project__embed { position: relative; width: 100%; height: 100%; overflow: hidden; }
+/* o iframe é só visual — a camada acima dele é quem recebe o clique */
+.project__embed iframe { position: absolute; top: 0; left: 0; border: 0; pointer-events: none; }
+.project__embed-open { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent; cursor: none; transition: background .2s; }
+.project__embed-open span { padding: 12px 18px; border: 2px solid var(--red); background: var(--red); color: #fff; font: 700 10px/1 var(--mono); letter-spacing: .12em; opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .2s; }
+.project__embed-open:hover { background: rgba(5, 5, 5, .45); }
+.project__embed-open:hover span, .project__embed-open:focus-visible span { opacity: 1; transform: translateY(0); }
+
+/* tela cheia */
+/* Abaixo do cursor customizado (99998/99999) e acima de todo o resto: com
+   z-index maior o painel cobria o cursor e ele sumia da tela. */
+.project-fullscreen { position: fixed; inset: 0; z-index: 99000; display: flex; flex-direction: column; background: var(--primary); }
+/* Aqui o conteúdo é um iframe cross-origin, que não entrega mousemove à página
+   mãe — o cursor customizado congelaria. Devolvemos o cursor nativo. */
+.project-fullscreen, .project-fullscreen * { cursor: auto; }
+.project-fullscreen__bar button, .project-fullscreen iframe { cursor: pointer; }
+.project-fullscreen__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 18px; border-bottom: 2px solid var(--border-strong); background: var(--secondary); }
+.project-fullscreen__bar span { display: inline-flex; align-items: center; gap: 9px; color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.project-fullscreen__bar span i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: projectLive 1.5s ease-in-out infinite; }
+.project-fullscreen__bar button { display: inline-flex; align-items: center; gap: 9px; padding: 10px 15px; border: 2px solid var(--border-strong); background: var(--primary); color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; cursor: none; transition: .15s; }
+.project-fullscreen__bar button:hover { border-color: var(--red); background: var(--red); color: #fff; }
+.project-fullscreen iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+
+/* visualizador de código */
+.code-viewer { position: fixed; inset: 0; z-index: 99000; display: flex; flex-direction: column; background: var(--primary); }
+.code-viewer__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 18px; border-bottom: 2px solid var(--border-strong); background: var(--secondary); }
+.code-viewer__bar span { display: inline-flex; align-items: center; gap: 9px; color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+.code-viewer__bar span i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
+.code-viewer__bar button { display: inline-flex; align-items: center; gap: 9px; padding: 10px 15px; border: 2px solid var(--border-strong); background: var(--primary); color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; cursor: none; transition: .15s; }
+.code-viewer__bar button:hover { border-color: var(--red); background: var(--red); color: #fff; }
+.code-viewer__tabs { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); background: var(--secondary); }
+.code-viewer__tabs button { padding: 12px 16px; border: 0; border-right: 1px solid var(--border); background: transparent; color: var(--muted); font: 700 9px/1 var(--mono); letter-spacing: .1em; cursor: none; transition: .15s; }
+.code-viewer__tabs button:hover { color: var(--accent); }
+.code-viewer__tabs button.active { background: var(--red); color: #fff; }
+.code-viewer__body { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 0; overflow: hidden; }
+.code-viewer__meta { grid-column: 2; padding: 24px; border-left: 1px solid var(--border); overflow-y: auto; }
+.code-viewer__path { display: inline-block; margin-bottom: 14px; padding: 6px 10px; border: 1px dashed var(--border-strong); color: var(--muted); font: 600 9px/1 var(--mono); letter-spacing: .05em; word-break: break-all; }
+.code-viewer__meta p { margin: 0; color: var(--muted); font: 500 11px/1.7 var(--mono); }
+.code-viewer__code { grid-column: 1; grid-row: 1; margin: 0; padding: 22px 0; overflow: auto; background: var(--primary); }
+.code-viewer__code code { display: block; font: 500 12px/1.75 var(--mono); }
+.code-line { display: flex; gap: 18px; padding: 0 22px; white-space: pre; }
+.code-line i { flex-shrink: 0; width: 22px; color: var(--muted); opacity: .5; font-style: normal; text-align: right; user-select: none; }
+.code-line em { font-style: normal; color: var(--accent); }
+.code-viewer__foot { margin: 0; padding: 12px 18px; border-top: 1px solid var(--border); color: var(--muted); font: 500 9px/1.6 var(--mono); letter-spacing: .04em; }
+.tk-comment { color: var(--muted); opacity: .75; }
+.tk-string { color: #16a34a; }
+.tk-key { color: var(--red); font-weight: 700; }
+.tk-annot { color: #7c3aed; font-weight: 700; }
+.tk-num { color: #0284c7; }
+[data-theme="dark"] .tk-string { color: #4ade80; }
+[data-theme="dark"] .tk-num { color: #38bdf8; }
+[data-theme="dark"] .tk-annot { color: #a78bfa; }
 .project__controls { display: flex; justify-content: flex-end; align-items: center; gap: 16px; margin-top: 22px; font: 700 9px/1 var(--mono); }
 .project__controls div { display: flex; }.project__controls button, .certificate-controls button { width: 42px; height: 40px; border: 1px solid var(--border); background: var(--primary); transition: .15s; }
 .project__controls button:hover, .certificate-controls button:hover { border-color: var(--accent); color: var(--red); transform: translateY(-2px); }
@@ -473,6 +531,7 @@ img { display: block; max-width: 100%; }
   .header { height: 72px; }.header__inner { width: calc(100% - 30px); }.brand span, .terminal-trigger, .header__resume { display: none; }.header__tools { gap: 12px; }
   .hero { min-height: auto; padding-top: 130px; grid-template-columns: 1fr; gap: 20px; }.hero__content { max-width: none; }.hero h1 { font-size: clamp(49px,14vw,76px); }.hero__visual { height: 390px; order: -1; display: none; }.scroll-mark { display: none; }
   .journey { grid-template-columns: 1fr; gap: 32px; }.journey__tilt { position: relative; top: auto; }.journey__portrait { height: 520px; }.timeline { padding-left: 40px; }
+  .code-viewer__body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }.code-viewer__meta { grid-column: 1; grid-row: 1; padding: 18px; border-left: 0; border-bottom: 1px solid var(--border); }.code-viewer__code { grid-column: 1; grid-row: 2; }
   .project__body, .certificate-card, .contact-grid { grid-template-columns: 1fr; }.project__image { height: 250px; }.certificate-card__image { min-height: 280px; border-right: 1px solid var(--border); border-bottom: 0; }.certificate-card__copy { padding: 28px; }.contact-grid { gap: 54px; }
   .assistant-teaser { display: none; }.assistant-tab { width: 54px; height: 142px; font-size: 9px; }.assistant-panel { right: 53px; top: -190px; }
   .scroll-rail { display: none; }
@@ -485,7 +544,7 @@ img { display: block; max-width: 100%; }
   .section-heading { margin-bottom: 38px; }.section-heading h2 { font-size: 36px; }.section-heading > span { font-size: 13px; }
   .hero { padding-top: 115px; padding-bottom: 60px; }.hero h1 { font-size: 44px; }.hero h2 { font-size: 22px; min-height: 32px; }.hero__summary, .code-comment { font-size: 12px; }.visitors-badge { display: none!important; }.social-row a { flex: 1; min-width: 130px; justify-content: center; }.hero__actions { gap: 12px; margin-top: 32px; }.btn { min-width: 0; flex: 1; padding-inline: 12px; font-size: 9px; }
   .skills { min-height: 970px; }.skill-tabs { gap: 9px; padding: 0; }.skill-tabs button { font-size: 10px; }.skill-grid { gap: 16px 14px; padding: 0; }.skill-card { min-width: 112px; height: 52px; padding-inline: 13px; }.skill-card > b { font-size: 11px; }
-  .project { padding: 20px; box-shadow: 5px 5px 0 var(--accent); }.project__head { display: block; }.project__number { display: block; margin-top: 18px; }.project__meta { flex-direction: row; align-items: center; gap: 12px; margin-top: 18px; }.project__meta .project__number { margin-top: 0; }.project__live-cta, .project__live-url, .project__live-alt { flex: 1 1 auto; justify-content: center; }.project__body { gap: 24px; }.project__image { height: 205px; }
+  .project { padding: 20px; box-shadow: 5px 5px 0 var(--accent); }.project__head { display: block; }.project__number { display: block; margin-top: 18px; }.project__meta { flex-direction: row; align-items: center; gap: 12px; margin-top: 18px; }.project__meta .project__number { margin-top: 0; }.project__live-cta, .project__live-alt { flex: 1 1 auto; justify-content: center; }.project__body { gap: 24px; }.project__image { height: 205px; }
   .activity { min-height: 600px; }.activity-panel__head { align-items: flex-start; flex-direction: column; }.activity-scroll { padding: 24px 18px; }
   .journey__portrait { height: 430px; }.timeline { padding-left: 36px; }.timeline__head { flex-direction: column; }.timeline__head h3 { font-size: 18px; }.timeline__head > b { order: 2; }.timeline-item { margin-bottom: 32px; }
   .certificate-card { padding: 15px; }.certificate-card__image { min-height: 225px; }.certificate-card__copy { padding: 24px 18px; }.certificate-card__meta { flex-direction: column; }.certificate-card__copy > small { margin-top: 24px; }.certificate-controls > span { display: none; }
