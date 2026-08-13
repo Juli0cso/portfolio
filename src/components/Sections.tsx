@@ -234,6 +234,86 @@ function highlight(line: string) {
   return parts
 }
 
+/* Markdown inline: negrito, código e link. O resto do texto passa direto. */
+const INLINE_MD = /(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\))/g
+
+function inlineMarkdown(text: string) {
+  return text.split(INLINE_MD).filter(Boolean).map((part, index) => {
+    if (part.startsWith('**')) return <strong key={index}>{part.slice(2, -2)}</strong>
+    if (part.startsWith('`')) return <code key={index}>{part.slice(1, -1)}</code>
+    const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part)
+    if (link) return <a href={link[2]} target="_blank" rel="noreferrer noopener" key={index}>{link[1]}</a>
+    return part
+  })
+}
+
+const isTableRow = (line: string) => line.trim().startsWith('|')
+const splitRow = (line: string) => line.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim())
+/* A linha separadora do cabeçalho (|---|---|) não vira conteúdo. */
+const isTableDivider = (line: string) => /^\|[\s:|-]+\|$/.test(line.trim())
+
+function renderMarkdown(source: string) {
+  const lines = source.split('\n')
+  const blocks: ReactNode[] = []
+  let index = 0
+
+  while (index < lines.length) {
+    const line = lines[index]
+
+    if (line.startsWith('```')) {                       // bloco de código
+      const body: string[] = []
+      index++
+      while (index < lines.length && !lines[index].startsWith('```')) body.push(lines[index++])
+      index++
+      blocks.push(<pre className="md-pre" key={blocks.length}><code>{body.join('\n')}</code></pre>)
+      continue
+    }
+
+    if (isTableRow(line)) {                             // tabela
+      const rows: string[][] = []
+      while (index < lines.length && isTableRow(lines[index])) {
+        if (!isTableDivider(lines[index])) rows.push(splitRow(lines[index]))
+        index++
+      }
+      const [head, ...body] = rows
+      blocks.push(<div className="md-table-wrap" key={blocks.length}><table className="md-table">
+        <thead><tr>{head.map((cell, i) => <th key={i}>{inlineMarkdown(cell)}</th>)}</tr></thead>
+        <tbody>{body.map((row, i) => <tr key={i}>{row.map((cell, j) => <td key={j}>{inlineMarkdown(cell)}</td>)}</tr>)}</tbody>
+      </table></div>)
+      continue
+    }
+
+    if (line.trim().startsWith('- ')) {                 // lista
+      const items: string[] = []
+      while (index < lines.length && lines[index].trim().startsWith('- ')) items.push(lines[index++].trim().slice(2))
+      blocks.push(<ul className="md-list" key={blocks.length}>{items.map((item, i) => <li key={i}>{inlineMarkdown(item)}</li>)}</ul>)
+      continue
+    }
+
+    const heading = /^(#{1,3})\s+(.*)$/.exec(line)
+    if (heading) {
+      const Tag = `h${heading[1].length}` as 'h1' | 'h2' | 'h3'
+      blocks.push(<Tag className={`md-h${heading[1].length}`} key={blocks.length}>{inlineMarkdown(heading[2])}</Tag>)
+      index++
+      continue
+    }
+
+    if (/^---+$/.test(line.trim())) { blocks.push(<hr className="md-hr" key={blocks.length} />); index++; continue }
+
+    if (line.trim() === '') { index++; continue }
+
+    const paragraph: string[] = []                      // parágrafo
+    while (index < lines.length && lines[index].trim() !== '' && !lines[index].startsWith('```')
+           && !isTableRow(lines[index]) && !/^(#{1,3})\s/.test(lines[index])
+           && !lines[index].trim().startsWith('- ') && !/^---+$/.test(lines[index].trim())) {
+      paragraph.push(lines[index++])
+    }
+    blocks.push(<p className="md-p" key={blocks.length}>{inlineMarkdown(paragraph.join(' '))}</p>)
+  }
+
+  return blocks
+}
+
 function CodeViewer({ snippets, title, onClose }: { snippets: CodeSnippet[]; title: string; onClose: () => void }) {
   const [active, setActive] = useState(0)
   const snippet = snippets[active]
@@ -257,7 +337,9 @@ function CodeViewer({ snippets, title, onClose }: { snippets: CodeSnippet[]; tit
         <span className="code-viewer__path">{snippet.file}</span>
         <p>{snippet.note}</p>
       </div>
-      <pre className="code-viewer__code"><code>{snippet.code.split('\n').map((line, index) => <span className="code-line" key={index}><i>{String(index + 1).padStart(2, '0')}</i><em>{highlight(line)}</em></span>)}</code></pre>
+      {snippet.lang === 'md'
+        ? <div className="code-viewer__doc">{renderMarkdown(snippet.code)}</div>
+        : <pre className="code-viewer__code"><code>{snippet.code.split('\n').map((line, index) => <span className="code-line" key={index}><i>{String(index + 1).padStart(2, '0')}</i><em>{highlight(line)}</em></span>)}</code></pre>}
     </div>
     <p className="code-viewer__foot">Trechos do repositório privado, revisados manualmente. Configurações sensíveis são injetadas por variável de ambiente e não aparecem no código.</p>
   </motion.div>

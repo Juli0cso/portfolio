@@ -3,15 +3,24 @@
    valor de credencial aparece aqui — as configurações sensíveis são injetadas
    por variável de ambiente e ficam representadas apenas pela chave. */
 
+import { clubeReadme } from './clubeReadme'
+
 export type CodeSnippet = {
   label: string
   file: string
-  lang: 'java' | 'sql'
+  lang: 'java' | 'sql' | 'md'
   note: string
   code: string
 }
 
 export const clubeSnippets: CodeSnippet[] = [
+  {
+    label: 'README',
+    file: 'README.md',
+    lang: 'md',
+    note: 'Documentação do repositório: o problema que o projeto ataca, o desenho da arquitetura, as decisões técnicas e como subir o ambiente.',
+    code: clubeReadme,
+  },
   {
     label: 'OAUTH + CACHE',
     file: 'services/MercadoLivreService.java',
@@ -96,42 +105,127 @@ public class MercadoLivreService {
 }`,
   },
   {
-    label: 'JOB AGENDADO',
-    file: 'jobs/PriceUpdateScheduler.java',
+    label: 'JOB EM LOTE',
+    file: 'jobs/ProductActivityScheduler.java',
     lang: 'java',
-    note: 'Rotina diária que revisa os preços cadastrados. Fica atrás de uma flag de configuração, grava só quando o preço mudou de fato, e isola a falha por produto para que um item quebrado não derrube o lote inteiro.',
+    note: 'Rotina diária de preços fatiada em lotes de 20 — o limite documentado do multi-get da API. Compara com o valor salvo e acumula só o que mudou para uma única escrita com saveAll, em vez de um save por produto.',
     code: `@Component
-@ConditionalOnProperty(name = "app.price-update.enabled", havingValue = "true")
+@Slf4j
 @RequiredArgsConstructor
-public class PriceUpdateScheduler {
+public class ProductActivityScheduler {
+
+    // Limite documentado do multi-get da API do Mercado Livre.
+    static final int BATCH_SIZE = 20;
 
     private final ProductRepository productRepository;
     private final MercadoLivreService mercadoLivreService;
 
-    @Scheduled(cron = "0 0 3 * * *")   // todo dia às 03:00
+    // Atualiza o preço dos produtos ativos, depois da limpeza dos inativos.
+    @Scheduled(cron = "0 0 4 * * *")
     public void updateProductPrices() {
-        List<Product> products = productRepository.findAll();
-        int updated = 0;
+        List<Product> activeProducts = productRepository.findByActiveTrueOrderByUpdatedAtDesc();
+        int updatedCount = 0;
 
-        for (Product product : products) {
-            try {
-                if (product.getMlId() == null || product.getMlId().isEmpty()) continue;
+        for (int i = 0; i < activeProducts.size(); i += BATCH_SIZE) {
+            List<Product> batch = activeProducts.subList(i, Math.min(activeProducts.size(), i + BATCH_SIZE));
+            List<String> mlIds = batch.stream()
+                    .map(Product::getMlId)
+                    .filter(id -> id != null && !id.isEmpty())
+                    .collect(Collectors.toList());
 
-                Double newPrice = mercadoLivreService.getProductPrice(product.getMlId());
+            if (mlIds.isEmpty()) continue;
 
-                // só escreve no banco se o preço realmente mudou
+            Map<String, Double> newPrices = mercadoLivreService.getProductsPrices(mlIds);
+
+            List<Product> productsToSave = new ArrayList<>();
+            for (Product product : batch) {
+                Double newPrice = newPrices.get(product.getMlId());
+                // grava só o que realmente mudou de preço
                 if (newPrice != null && !newPrice.equals(product.getPrice())) {
                     product.setPrice(newPrice);
-                    productRepository.save(product);
-                    updated++;
+                    productsToSave.add(product);
                 }
-            } catch (Exception e) {
-                // falha em um produto não interrompe a rotina
-                log.error("Erro ao atualizar {}: {}", product.getMlId(), e.getMessage());
+            }
+
+            if (!productsToSave.isEmpty()) {
+                productRepository.saveAll(productsToSave);   // escrita em lote
+                updatedCount += productsToSave.size();
             }
         }
 
-        log.info("Rotina concluída. {} produtos atualizados.", updated);
+        log.info("Atualização diária concluída. Produtos atualizados: {}", updatedCount);
+    }
+}`,
+  },
+  {
+    label: 'TESTES',
+    file: 'services/MercadoLivreServiceTest.java',
+    lang: 'java',
+    note: 'Testes de unidade com JUnit 5 e Mockito, sem subir contexto Spring nem tocar a rede. Cobrem o que é fácil de quebrar sem perceber: o cache do token e o descarte de itens que voltam com código diferente de 200.',
+    code: `@ExtendWith(MockitoExtension.class)
+class MercadoLivreServiceTest {
+
+    @Mock
+    private RestTemplate restTemplate;
+
+    private MercadoLivreService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new MercadoLivreService(restTemplate);
+        ReflectionTestUtils.setField(service, "appId", "app-id-de-teste");
+        ReflectionTestUtils.setField(service, "clientSecret", "segredo-de-teste");
+    }
+
+    @Test
+    @DisplayName("reaproveita o token enquanto válido, sem repetir a chamada OAuth")
+    void reaproveitaTokenValido() {
+        stubTokenResponse("token-valido", 3600);
+        stubItemsResponse(List.of(item(200, "MLB1", 10.0)));
+
+        service.getProductsPrices(List.of("MLB1"));
+        service.getProductsPrices(List.of("MLB1"));
+
+        // duas buscas de preço, mas o token só é pedido uma vez
+        verify(restTemplate, times(1))
+                .postForEntity(eq(TOKEN_URL), any(HttpEntity.class), eq(Map.class));
+    }
+
+    @Test
+    @DisplayName("renova o token quando a validade já foi consumida pela margem")
+    void renovaTokenExpirado() {
+        // expires_in menor que a margem de 60s => nasce vencido e é renovado
+        stubTokenResponse("token-curto", 30);
+        stubItemsResponse(List.of(item(200, "MLB1", 10.0)));
+
+        service.getProductsPrices(List.of("MLB1"));
+        service.getProductsPrices(List.of("MLB1"));
+
+        verify(restTemplate, times(2))
+                .postForEntity(eq(TOKEN_URL), any(HttpEntity.class), eq(Map.class));
+    }
+
+    @Test
+    @DisplayName("ignora itens cujo código não é 200 e mantém os demais")
+    void ignoraItensComCodigoDiferenteDe200() {
+        stubTokenResponse("token-valido", 3600);
+        stubItemsResponse(List.of(
+                item(200, "MLB1", 10.0),
+                item(404, "MLB2", 20.0),
+                item(200, "MLB3", 30.5)));
+
+        Map<String, Double> precos = service.getProductsPrices(List.of("MLB1", "MLB2", "MLB3"));
+
+        assertThat(precos).containsOnlyKeys("MLB1", "MLB3");
+    }
+
+    @Test
+    @DisplayName("não chama a API quando a lista de ids vem vazia ou nula")
+    void naoChamaApiComListaVazia() {
+        assertThat(service.getProductsPrices(List.of())).isEmpty();
+        assertThat(service.getProductsPrices(null)).isEmpty();
+
+        verifyNoInteractions(restTemplate);
     }
 }`,
   },
