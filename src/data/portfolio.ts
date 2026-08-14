@@ -54,8 +54,6 @@ export type Project = {
   link?: string
   /** Rótulo do botão que abre a prévia em tela cheia. */
   linkLabel?: string
-  /** Nota curta exibida abaixo dos botões. */
-  linkNote?: string
   /** Links secundários (canal, repositório, etc.). */
   extraLinks?: { label: string; href: string }[]
   /** Trechos de código exibidos no visualizador. Curados e revisados à mão. */
@@ -70,7 +68,6 @@ export const projects: Project[] = [
     highlights: ['API REST com integração OAuth ao Mercado Livre', 'Job agendado de atualização de preços', 'Histórico auditado por trigger no banco', 'Webhook autenticado recebendo ofertas do n8n'],
     link: 'http://147.15.8.223/',
     linkLabel: 'ABRIR EM TELA CHEIA',
-    linkNote: 'A prévia acima é a aplicação real rodando ao vivo — pode navegar por ela aqui mesmo. Infraestrutura própria em VPS com nginx, mantida e publicada por mim.',
     extraLinks: [{ label: 'CANAL DE OFERTAS', href: 'https://t.me/ClubDeconomia' }],
     codeSnippets: clubeSnippets,
   },

@@ -396,7 +396,6 @@ export function Projects() {
           {project.link && <button className="project__live-cta" onClick={() => setFullscreen(true)} data-cursor-text="FULL">{project.linkLabel ?? 'ABRIR EM TELA CHEIA'} <b>⤢</b></button>}
           {project.codeSnippets?.length ? <button className={project.link ? 'project__live-alt' : 'project__live-cta'} onClick={() => setShowCode(true)} data-cursor-text="CODE">VER CÓDIGO <b>{'{ }'}</b></button> : null}
           {project.extraLinks?.map((extra) => <a className="project__live-alt" href={extra.href} target="_blank" rel="noreferrer noopener" key={extra.href}>{extra.label}</a>)}
-          {project.linkNote && <p className="project__live-note">{project.linkNote}</p>}
         </div>}
       </div></div>
       <div className="project__controls"><span>{String(active + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}</span><div><button aria-label="Projeto anterior" onClick={() => pick(-1)}>←</button><button aria-label="Próximo projeto" onClick={() => pick(1)}>→</button></div></div>
