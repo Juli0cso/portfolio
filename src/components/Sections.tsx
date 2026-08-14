@@ -154,26 +154,20 @@ function SkillCard({ skill, index }: { skill: Skill; index: number }) {
 }
 
 /* ─── Projects ───────────────────────────────────────────────────────────── */
-/* A prévia embute o site real. Renderizamos num viewport de desktop e reduzimos
-   por escala, senão a aplicação cairia no layout mobile dentro da caixa. */
-const EMBED_VIEWPORT = { width: 1440, height: 900 }
+/* O viewport do iframe acompanha o tamanho da caixa: numa coluna estreita
+   embutimos como celular, e o site responsivo entrega o próprio layout mobile
+   já legível. Forçar 1440px numa caixa de 340px reduziria tudo a 23%. */
+const EMBED_DESKTOP = 1440
+const EMBED_MOBILE = 430
+const embedWidth = (boxWidth: number) => (boxWidth < 520 ? EMBED_MOBILE : EMBED_DESKTOP)
 
-/* Só embutimos quando faz sentido:
-   - um iframe http:// dentro de uma página https:// é bloqueado como mixed content;
-   - abaixo de 768px a caixa reduziria o site a ~23%, ilegível — nesse caso o
-     mockup estático + botão de tela cheia entregam uma experiência melhor.
-   Em ambos os casos caímos no mockup. */
-const EMBED_QUERY = '(min-width: 768px)'
-
+/* O único impedimento real é mixed content: um iframe http:// dentro de uma
+   página https:// é bloqueado pelo navegador, sem contorno do lado do cliente.
+   Aí caímos no mockup estático. */
 function useCanEmbed(url?: string) {
   const [canEmbed, setCanEmbed] = useState(false)
   useEffect(() => {
-    if (!url || (window.location.protocol === 'https:' && url.startsWith('http://'))) return setCanEmbed(false)
-    const media = window.matchMedia(EMBED_QUERY)
-    const sync = () => setCanEmbed(media.matches)
-    sync()
-    media.addEventListener('change', sync)
-    return () => media.removeEventListener('change', sync)
+    setCanEmbed(!!url && !(window.location.protocol === 'https:' && url.startsWith('http://')))
   }, [url])
   return canEmbed
 }
@@ -184,7 +178,7 @@ function useCanEmbed(url?: string) {
    O site continua ao vivo aqui; quem quiser usar abre em tela cheia. */
 function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpen: () => void }) {
   const box = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ scale: 0, height: 0 })
+  const [size, setSize] = useState({ scale: 0, viewport: EMBED_DESKTOP, height: 0 })
   useEffect(() => {
     const node = box.current
     if (!node) return
@@ -192,8 +186,9 @@ function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpe
        real da caixa, para o site preencher o espaço em vez de sobrar um vão. */
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
-      const scale = width / EMBED_VIEWPORT.width
-      setSize({ scale, height: scale > 0 ? height / scale : 0 })
+      const viewport = embedWidth(width)
+      const scale = width / viewport
+      setSize({ scale, viewport, height: scale > 0 ? height / scale : 0 })
     })
     observer.observe(node)
     return () => observer.disconnect()
@@ -205,7 +200,7 @@ function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpe
       /* `zoom` e não `transform: scale()`: o transform encolhe só o desenho e deixa a
          caixa de layout em 1440px, que transborda o card e — onde o recorte do
          overflow não vale para hit-test — rouba o clique dos botões ao lado. */
-      style={{ width: EMBED_VIEWPORT.width, height: Math.max(size.height, EMBED_VIEWPORT.height), zoom: size.scale }}
+      style={{ width: size.viewport, height: Math.max(size.height, 320), zoom: size.scale }}
     />}
     <button className="project__embed-open" onClick={onOpen} data-cursor-text="ABRIR" aria-label={`Abrir ${title} em tela cheia`}>
       <span>ABRIR EM TELA CHEIA <b>⤢</b></span>
