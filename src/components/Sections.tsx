@@ -184,22 +184,28 @@ function useCanEmbed(url?: string) {
    O site continua ao vivo aqui; quem quiser usar abre em tela cheia. */
 function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpen: () => void }) {
   const box = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0)
+  const [size, setSize] = useState({ scale: 0, height: 0 })
   useEffect(() => {
     const node = box.current
     if (!node) return
-    const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / EMBED_VIEWPORT.width))
+    /* A escala vem da largura; a altura do viewport embutido é derivada da altura
+       real da caixa, para o site preencher o espaço em vez de sobrar um vão. */
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      const scale = width / EMBED_VIEWPORT.width
+      setSize({ scale, height: scale > 0 ? height / scale : 0 })
+    })
     observer.observe(node)
     return () => observer.disconnect()
   }, [])
   return <div className="project__embed" ref={box}>
-    {scale > 0 && <iframe
+    {size.scale > 0 && <iframe
       src={src} title={title} loading="lazy" referrerPolicy="no-referrer" tabIndex={-1} aria-hidden="true"
       sandbox="allow-scripts allow-same-origin allow-forms"
       /* `zoom` e não `transform: scale()`: o transform encolhe só o desenho e deixa a
          caixa de layout em 1440px, que transborda o card e — onde o recorte do
          overflow não vale para hit-test — rouba o clique dos botões ao lado. */
-      style={{ width: EMBED_VIEWPORT.width, height: EMBED_VIEWPORT.height, zoom: scale }}
+      style={{ width: EMBED_VIEWPORT.width, height: Math.max(size.height, EMBED_VIEWPORT.height), zoom: size.scale }}
     />}
     <button className="project__embed-open" onClick={onOpen} data-cursor-text="ABRIR" aria-label={`Abrir ${title} em tela cheia`}>
       <span>ABRIR EM TELA CHEIA <b>⤢</b></span>
