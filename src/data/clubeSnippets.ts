@@ -8,7 +8,7 @@ import { clubeReadme } from './clubeReadme'
 export type CodeSnippet = {
   label: string
   file: string
-  lang: 'java' | 'sql' | 'md'
+  lang: 'java' | 'sql' | 'md' | 'js' | 'json'
   note: string
   code: string
 }

@@ -1,4 +1,5 @@
 import { clubeSnippets, type CodeSnippet } from './clubeSnippets'
+import { n8nSnippets } from './n8nSnippets'
 
 export type Skill = { name: string; category: string; icon: string; tone?: string }
 
@@ -74,16 +75,17 @@ export const projects: Project[] = [
     codeSnippets: clubeSnippets,
   },
   {
-    index: '02', title: 'API RESTful com Spring Boot',
+    index: '02', title: 'Pipeline de Coleta com n8n',
+    description: 'Orquestração que alimenta o Clube da Economia: cinco rotinas independentes que coletam anúncios, geram links de afiliado, publicam no Telegram e mantêm a vitrine limpa — coordenadas pelo estado das linhas no banco, sem fila intermediária.',
+    tags: ['EM PRODUÇÃO', 'N8N', 'AUTOMAÇÃO', 'REDIS', 'SUPABASE'], image: '/api/placeholder/project-n8n-flow.svg',
+    highlights: ['Parser duplo para os dois layouts do Mercado Livre', 'Coleta em lote com sessão reaproveitada no Redis', 'Publicação sorteada em janela de horário útil', 'Retomada por estado: cada etapa reprocessa sozinha'],
+    codeSnippets: n8nSnippets,
+  },
+  {
+    index: '03', title: 'API RESTful com Spring Boot',
     description: 'Criação e consumo de APIs e microsserviços integrados a bancos de dados SQL para rotinas corporativas.',
     tags: ['SPRING BOOT', 'JAVA', 'REST API', 'SQL'], image: '/api/placeholder/project-api.svg',
     highlights: ['Arquitetura de APIs escaláveis', 'Integração persistente com SQL', 'Rotinas corporativas desacopladas', 'Boas práticas de microsserviços'],
-  },
-  {
-    index: '03', title: 'Automação Corporativa com n8n',
-    description: 'Automação de fluxos de trabalho ágeis, integração de dados e scripts para otimização de infraestrutura.',
-    tags: ['N8N', 'AUTOMAÇÃO', 'BASH', 'DEVOPS'], image: '/api/placeholder/project-n8n.svg',
-    highlights: ['Orquestração visual de processos', 'Integração entre APIs e dados', 'Scripts de apoio operacional', 'Redução de tarefas repetitivas'],
   },
   {
     index: '04', title: 'Robótica e IoT com ESP32',

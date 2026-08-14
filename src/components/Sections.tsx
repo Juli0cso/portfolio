@@ -221,7 +221,7 @@ const CODE_RULES: { cls: string; re: RegExp }[] = [
   { cls: 'tk-comment', re: /(\/\/[^\n]*|--[^\n]*|\/\*[\s\S]*?\*\/)/ },
   { cls: 'tk-string', re: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/ },
   { cls: 'tk-annot', re: /(@[A-Za-z_][A-Za-z0-9_]*)/ },
-  { cls: 'tk-key', re: /\b(public|private|protected|class|void|return|if|else|for|while|new|throw|final|static|synchronized|instanceof|continue|import|package|try|catch|null|true|false|int|long|double|String|CREATE|TABLE|ALTER|INSERT|INTO|VALUES|SELECT|UPDATE|DELETE|TRIGGER|FUNCTION|RETURNS|BEGIN|END|IF|THEN|OR|AND|NOT|EXISTS|POLICY|ENABLE|ROW|LEVEL|SECURITY|LANGUAGE|AFTER|BEFORE|EXECUTE|ON|USING|REFERENCES|PRIMARY|KEY|DEFAULT|CASCADE)\b/ },
+  { cls: 'tk-key', re: /\b(public|private|protected|class|void|return|if|else|for|while|new|throw|final|static|synchronized|instanceof|continue|import|package|try|catch|null|true|false|int|long|double|String|const|let|var|function|of|in|typeof|await|async|CREATE|TABLE|ALTER|INSERT|INTO|VALUES|SELECT|UPDATE|DELETE|TRIGGER|FUNCTION|RETURNS|BEGIN|END|IF|THEN|OR|AND|NOT|EXISTS|POLICY|ENABLE|ROW|LEVEL|SECURITY|LANGUAGE|AFTER|BEFORE|EXECUTE|ON|USING|REFERENCES|PRIMARY|KEY|DEFAULT|CASCADE)\b/ },
   { cls: 'tk-num', re: /\b(\d+(?:\.\d+)?L?)\b/ },
 ]
 const CODE_SPLITTER = new RegExp(CODE_RULES.map((rule) => rule.re.source).join('|'), 'g')
@@ -382,16 +382,17 @@ export function Projects() {
   const move = (step: number) => { setDirection(step); setActive((current) => (current + step + projects.length) % projects.length) }
   const pick = (step: number) => { setEngaged(true); move(step) }
   useEffect(() => { if (paused || fullscreen || engaged) return; const timer = window.setInterval(() => move(1), 5000); return () => window.clearInterval(timer) }, [paused, active, fullscreen, engaged])
-  return <section id="projects" className="section shell" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}><SectionHeading index="02" eyebrow="PORTFOLIO" title="PROJETOS EM DESTAQUE" description="Projetos conceituais baseados nas minhas principais áreas de atuação: backend, automação e sistemas embarcados." />
+  return <section id="projects" className="section shell" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}><SectionHeading index="02" eyebrow="PORTFOLIO" title="PROJETOS EM DESTAQUE" description="Sistemas em produção que eu construí e mantenho, ao lado de projetos conceituais das minhas áreas de atuação: backend, automação e sistemas embarcados." />
     <Reveal className="project-tilt" delay={.1} scale>
       <Tilt className="" max={2}><article className={`project project--${direction > 0 ? 'next' : 'prev'}`} key={project.title}>
       <div className="project__head"><div><h3>{project.title}</h3><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><div className="project__meta">{project.link && <span className="project__badge"><i />LIVE</span>}<span className="project__number">PROJECT::{project.index}</span></div></div>
       <div className="project__body"><div className={`project__image ${project.link && canEmbed ? 'project__image--live' : ''}`} data-cursor-text={project.link && canEmbed ? '' : 'EXPLORE'}>{project.link && canEmbed
         ? <LivePreview src={project.link} title={project.title} onOpen={() => setFullscreen(true)} />
         : <img src={project.image} alt={`Prévia do projeto ${project.title}`} loading="lazy" decoding="async" />}</div><div className="project__copy"><p>{project.description}</p><h4>SYSTEM HIGHLIGHTS</h4><ul>{project.highlights.map((item) => <li key={item}><b>#</b>{item}</li>)}</ul>
-        {project.link && <div className="project__live">
-          <button className="project__live-cta" onClick={() => setFullscreen(true)} data-cursor-text="FULL">{project.linkLabel ?? 'ABRIR EM TELA CHEIA'} <b>⤢</b></button>
-          {project.codeSnippets?.length ? <button className="project__live-alt" onClick={() => setShowCode(true)} data-cursor-text="CODE">VER CÓDIGO <b>{'{ }'}</b></button> : null}
+        {/* Sem site ao vivo, o código passa a ser a ação principal do card. */}
+        {(project.link || project.codeSnippets?.length) && <div className="project__live">
+          {project.link && <button className="project__live-cta" onClick={() => setFullscreen(true)} data-cursor-text="FULL">{project.linkLabel ?? 'ABRIR EM TELA CHEIA'} <b>⤢</b></button>}
+          {project.codeSnippets?.length ? <button className={project.link ? 'project__live-alt' : 'project__live-cta'} onClick={() => setShowCode(true)} data-cursor-text="CODE">VER CÓDIGO <b>{'{ }'}</b></button> : null}
           {project.extraLinks?.map((extra) => <a className="project__live-alt" href={extra.href} target="_blank" rel="noreferrer noopener" key={extra.href}>{extra.label}</a>)}
           {project.linkNote && <p className="project__live-note">{project.linkNote}</p>}
         </div>}
