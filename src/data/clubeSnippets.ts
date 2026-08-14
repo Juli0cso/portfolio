@@ -8,7 +8,8 @@ import { clubeReadme } from './clubeReadme'
 export type CodeSnippet = {
   label: string
   file: string
-  lang: 'java' | 'sql' | 'md' | 'js' | 'json'
+  /** 'image' trata `code` como caminho de arquivo e renderiza em tela cheia. */
+  lang: 'java' | 'sql' | 'md' | 'js' | 'json' | 'image'
   note: string
   code: string
 }

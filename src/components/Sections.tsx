@@ -343,7 +343,9 @@ function CodeViewer({ snippets, title, onClose }: { snippets: CodeSnippet[]; tit
         <span className="code-viewer__path">{snippet.file}</span>
         <p>{snippet.note}</p>
       </div>
-      {snippet.lang === 'md'
+      {snippet.lang === 'image'
+        ? <div className="code-viewer__figure"><img src={snippet.code} alt={snippet.note} /></div>
+        : snippet.lang === 'md'
         ? <div className="code-viewer__doc">{renderMarkdown(snippet.code)}</div>
         : <pre className="code-viewer__code"><code>{snippet.code.split('\n').map((line, index) => <span className="code-line" key={index}><i>{String(index + 1).padStart(2, '0')}</i><em>{highlight(line)}</em></span>)}</code></pre>}
     </div>

@@ -7,6 +7,13 @@ import type { CodeSnippet } from './clubeSnippets'
 
 export const n8nSnippets: CodeSnippet[] = [
   {
+    label: 'CANVAS',
+    file: 'workflow/canvas.svg',
+    lang: 'image',
+    note: 'Os 53 nós nas posições reais do workflow, geradas a partir do export. Cinco faixas horizontais, uma por gatilho; os nós esmaecidos estão desativados.',
+    code: '/api/placeholder/project-n8n-canvas.svg',
+  },
+  {
     label: 'FLUXO',
     file: 'workflow/visão-geral.md',
     lang: 'md',

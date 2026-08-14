@@ -77,7 +77,7 @@ export const projects: Project[] = [
   {
     index: '02', title: 'Pipeline de Coleta com n8n',
     description: 'Orquestração que alimenta o Clube da Economia: cinco rotinas independentes que coletam anúncios, geram links de afiliado, publicam no Telegram e mantêm a vitrine limpa — coordenadas pelo estado das linhas no banco, sem fila intermediária.',
-    tags: ['EM PRODUÇÃO', 'N8N', 'AUTOMAÇÃO', 'REDIS', 'SUPABASE'], image: '/api/placeholder/project-n8n-flow.svg',
+    tags: ['EM PRODUÇÃO', 'N8N', 'AUTOMAÇÃO', 'REDIS', 'SUPABASE'], image: '/api/placeholder/project-n8n-canvas.svg',
     highlights: ['Parser duplo para os dois layouts do Mercado Livre', 'Coleta em lote com sessão reaproveitada no Redis', 'Publicação sorteada em janela de horário útil', 'Retomada por estado: cada etapa reprocessa sozinha'],
     codeSnippets: n8nSnippets,
   },
