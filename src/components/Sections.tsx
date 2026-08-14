@@ -353,43 +353,6 @@ function CodeViewer({ snippets, title, onClose }: { snippets: CodeSnippet[]; tit
   </motion.div>
 }
 
-/* Galeria do card: alterna imagens por seta. Cada entrada é testada antes de
-   entrar em cena, então um arquivo que ainda não foi salvo some da lista em vez
-   de virar ícone de imagem quebrada — e a seta só aparece com duas ou mais. */
-function ProjectGallery({ shots, title }: { shots: { src: string; label: string }[]; title: string }) {
-  const [ok, setOk] = useState<{ src: string; label: string }[]>([])
-  const [active, setActive] = useState(0)
-
-  useEffect(() => {
-    let alive = true
-    Promise.all(shots.map((shot) => new Promise<boolean>((resolve) => {
-      const probe = new Image()
-      probe.onload = () => resolve(true)
-      probe.onerror = () => resolve(false)
-      probe.src = shot.src
-    }))).then((results) => {
-      if (!alive) return
-      setOk(shots.filter((_, index) => results[index]))
-      setActive(0)
-    })
-    return () => { alive = false }
-  }, [shots])
-
-  if (!ok.length) return null
-  const shot = ok[active]
-  const move = (step: number) => setActive((current) => (current + step + ok.length) % ok.length)
-
-  return <div className="project__gallery">
-    <img src={shot.src} alt={`${title} — ${shot.label}`} decoding="async" />
-    <span className="project__gallery-label">{shot.label}</span>
-    {ok.length > 1 && <div className="project__gallery-nav">
-      <button onClick={() => move(-1)} aria-label="Imagem anterior" data-cursor-text="">←</button>
-      <em>{active + 1}/{ok.length}</em>
-      <button onClick={() => move(1)} aria-label="Próxima imagem" data-cursor-text="">→</button>
-    </div>}
-  </div>
-}
-
 function FullscreenPreview({ src, title, onClose }: { src: string; title: string; onClose: () => void }) {
   useEffect(() => {
     const key = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }
@@ -427,8 +390,6 @@ export function Projects() {
       <div className="project__head"><div><h3>{project.title}</h3><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><div className="project__meta">{project.link && <span className="project__badge"><i />LIVE</span>}<span className="project__number">PROJECT::{project.index}</span></div></div>
       <div className="project__body"><div className={`project__image ${project.link && canEmbed ? 'project__image--live' : ''}`} data-cursor-text={project.link && canEmbed ? '' : 'EXPLORE'}>{project.link && canEmbed
         ? <LivePreview src={project.link} title={project.title} onOpen={() => setFullscreen(true)} />
-        : project.gallery?.length
-        ? <ProjectGallery shots={project.gallery} title={project.title} />
         : <img src={project.image} alt={`Prévia do projeto ${project.title}`} loading="lazy" decoding="async" />}</div><div className="project__copy"><p>{project.description}</p><h4>SYSTEM HIGHLIGHTS</h4><ul>{project.highlights.map((item) => <li key={item}><b>#</b>{item}</li>)}</ul>
         {/* Sem site ao vivo, o código passa a ser a ação principal do card. */}
         {(project.link || project.codeSnippets?.length) && <div className="project__live">

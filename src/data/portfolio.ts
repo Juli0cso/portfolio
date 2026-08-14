@@ -60,9 +60,6 @@ export type Project = {
   extraLinks?: { label: string; href: string }[]
   /** Trechos de código exibidos no visualizador. Curados e revisados à mão. */
   codeSnippets?: CodeSnippet[]
-  /** Imagens alternáveis por seta no card. Entradas que não carregarem são
-   *  descartadas em silêncio, então um arquivo ainda ausente não quebra o card. */
-  gallery?: { src: string; label: string }[]
 }
 
 export const projects: Project[] = [
@@ -80,13 +77,9 @@ export const projects: Project[] = [
   {
     index: '02', title: 'Pipeline de Coleta com n8n',
     description: 'Orquestração que alimenta o Clube da Economia: cinco rotinas independentes que coletam anúncios, geram links de afiliado, publicam no Telegram e mantêm a vitrine limpa — coordenadas pelo estado das linhas no banco, sem fila intermediária.',
-    tags: ['EM PRODUÇÃO', 'N8N', 'AUTOMAÇÃO', 'REDIS', 'SUPABASE'], image: '/api/placeholder/project-n8n-canvas.svg',
+    tags: ['EM PRODUÇÃO', 'N8N', 'AUTOMAÇÃO', 'REDIS', 'SUPABASE'], image: '/api/placeholder/n8n-editor.png',
     highlights: ['Parser duplo para os dois layouts do Mercado Livre', 'Coleta em lote com sessão reaproveitada no Redis', 'Publicação sorteada em janela de horário útil', 'Retomada por estado: cada etapa reprocessa sozinha'],
     codeSnippets: n8nSnippets,
-    gallery: [
-      { src: '/api/placeholder/project-n8n-canvas.svg', label: 'CANVAS' },
-      { src: '/api/placeholder/n8n-editor.png', label: 'NO EDITOR' },
-    ],
   },
   {
     index: '03', title: 'API RESTful com Spring Boot',
