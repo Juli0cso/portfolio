@@ -393,8 +393,8 @@ export function Projects() {
         : <img src={project.image} alt={`Prévia do projeto ${project.title}`} loading="lazy" decoding="async" />}</div><div className="project__copy"><p>{project.description}</p><h4>SYSTEM HIGHLIGHTS</h4><ul>{project.highlights.map((item) => <li key={item}><b>#</b>{item}</li>)}</ul>
         {/* Sem site ao vivo, o código passa a ser a ação principal do card. */}
         {(project.link || project.codeSnippets?.length) && <div className="project__live">
-          {project.link && <button className="project__live-cta" onClick={() => setFullscreen(true)} data-cursor-text="FULL">{project.linkLabel ?? 'ABRIR EM TELA CHEIA'} <b>⤢</b></button>}
-          {project.codeSnippets?.length ? <button className={project.link ? 'project__live-alt' : 'project__live-cta'} onClick={() => setShowCode(true)} data-cursor-text="CODE">VER CÓDIGO <b>{'{ }'}</b></button> : null}
+          {project.link && <button className="project__live-cta" onClick={() => setFullscreen(true)} data-cursor-text="FULL">{project.linkLabel ?? 'TELA CHEIA'} <b>⤢</b></button>}
+          {project.codeSnippets?.length ? <button className={project.link ? 'project__live-alt' : 'project__live-cta'} onClick={() => setShowCode(true)} data-cursor-text="CODE">{project.link ? 'CÓDIGO' : 'VER CÓDIGO'} <b>{'{ }'}</b></button> : null}
           {project.extraLinks?.map((extra) => <a className="project__live-alt" href={extra.href} target="_blank" rel="noreferrer noopener" key={extra.href}>{extra.label}</a>)}
         </div>}
       </div></div>

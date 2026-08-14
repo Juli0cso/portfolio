@@ -67,8 +67,8 @@ export const projects: Project[] = [
     tags: ['EM PRODUÇÃO', 'SPRING BOOT', 'JAVA', 'POSTGRES', 'DOCKER', 'N8N'], image: '/api/placeholder/project-clube.svg',
     highlights: ['API REST com integração OAuth ao Mercado Livre', 'Job agendado de atualização de preços', 'Histórico auditado por trigger no banco', 'Webhook autenticado recebendo ofertas do n8n'],
     link: 'http://147.15.8.223/',
-    linkLabel: 'ABRIR EM TELA CHEIA',
-    extraLinks: [{ label: 'CANAL DE OFERTAS', href: 'https://t.me/ClubDeconomia' }],
+    linkLabel: 'TELA CHEIA',
+    extraLinks: [{ label: 'TELEGRAM', href: 'https://t.me/ClubDeconomia' }],
     codeSnippets: clubeSnippets,
   },
   {

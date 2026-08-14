@@ -357,11 +357,13 @@ img { display: block; max-width: 100%; }
 .project__number { font: 700 10px/1 var(--mono); color: var(--muted); }
 .tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .tags span { padding: 5px 9px; border: 1px solid var(--red); color: var(--red); font: 600 9px/1 var(--mono); letter-spacing: .1em; }
-/* Altura comum a todos os cards: o carrossel troca projetos com quantidades
-   diferentes de botões e destaques, e sem um piso o card pulava de tamanho a
-   cada troca. `min-height` em vez de altura fixa para nunca cortar conteúdo. */
-.project__body { display: grid; grid-template-columns: 1.15fr .85fr; gap: 34px; min-height: 430px; }
-.project__image { height: 290px; overflow: hidden; border: 1px solid var(--border); border-bottom: 6px solid var(--accent); background: var(--primary); }
+/* Altura comum a todos os cards, igual à da imagem: assim o carrossel não pula
+   de tamanho a cada troca e nenhum card sobra espaço vazio. `min-height` e não
+   altura fixa para nunca cortar conteúdo em telas estreitas. */
+.project__body { display: grid; grid-template-columns: 1.15fr .85fr; gap: 34px; min-height: 330px; }
+/* A imagem acompanha a altura da linha em vez de ficar travada em 290px: nos
+   cards de texto curto ela cresce e ocupa o espaço que antes ficava vazio. */
+.project__image { height: auto; min-height: 290px; align-self: stretch; overflow: hidden; border: 1px solid var(--border); border-bottom: 6px solid var(--accent); background: var(--primary); }
 .project__image img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); transition: filter .4s, transform .5s; }
 .project:hover .project__image img { filter: grayscale(0); transform: scale(1.025); }
 .project__copy p { margin-top: 0; color: var(--muted); font-size: 14px; }
@@ -374,12 +376,12 @@ img { display: block; max-width: 100%; }
 .project__badge i { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: projectLive 1.5s ease-in-out infinite; }
 @keyframes projectLive { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.6); } }
 .project__image a { display: block; width: 100%; height: 100%; }
-/* Ação principal ocupando a linha inteira e as secundárias lado a lado, todas
-   com a mesma caixa — em flex-wrap elas quebravam desalinhadas e com alturas
-   diferentes, por causa das espessuras de borda distintas. */
-.project__live { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--border); }
-.project__live-cta, .project__live-alt { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 46px; padding: 0 16px; border: 2px solid; font: 700 10px/1 var(--mono); letter-spacing: .11em; text-align: center; text-decoration: none; transition: transform .15s, box-shadow .15s, border-color .15s, color .15s; }
-.project__live-cta { grid-column: 1 / -1; border-color: var(--red); background: var(--red); color: #fff; box-shadow: 4px 4px 0 var(--accent); }
+/* Uma única linha de botões, repartida em partes iguais: um botão ocupa a
+   largura toda, três dividem em terços. Em duas linhas o card do Clube passava
+   dos 290px do resto e obrigava todos a crescer junto. */
+.project__live { display: flex; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+.project__live-cta, .project__live-alt { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 10px; border: 2px solid; font: 700 10px/1 var(--mono); letter-spacing: .08em; text-align: center; text-decoration: none; white-space: nowrap; transition: transform .15s, box-shadow .15s, border-color .15s, color .15s; }
+.project__live-cta { border-color: var(--red); background: var(--red); color: #fff; box-shadow: 4px 4px 0 var(--accent); }
 .project__live-cta:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent); }
 .project__live-alt { border-color: var(--border-strong); background: var(--primary); color: var(--accent); }
 .project__live-alt:hover { border-color: var(--red); color: var(--red); }
@@ -389,7 +391,7 @@ button.project__live-cta { cursor: none; }
 /* prévia ao vivo: iframe renderizado em viewport desktop e reduzido por escala.
    Sem a altura fixa de 290px do .project__image, a caixa estica junto com a
    coluna de texto — senão sobra um vão embaixo da prévia. */
-.project__image--live { position: relative; height: auto; min-height: 290px; align-self: stretch; background: var(--primary); }
+.project__image--live { position: relative; background: var(--primary); }
 .project__embed { position: absolute; inset: 0; overflow: hidden; }
 /* o iframe é só visual — a camada acima dele é quem recebe o clique */
 .project__embed iframe { position: absolute; top: 0; left: 0; border: 0; pointer-events: none; }
