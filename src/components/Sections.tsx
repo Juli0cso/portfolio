@@ -154,12 +154,12 @@ function SkillCard({ skill, index }: { skill: Skill; index: number }) {
 }
 
 /* ─── Projects ───────────────────────────────────────────────────────────── */
-/* O viewport do iframe acompanha o tamanho da caixa: numa coluna estreita
-   embutimos como celular, e o site responsivo entrega o próprio layout mobile
-   já legível. Forçar 1440px numa caixa de 340px reduziria tudo a 23%. */
-const EMBED_DESKTOP = 1440
-const EMBED_MOBILE = 430
-const embedWidth = (boxWidth: number) => (boxWidth < 520 ? EMBED_MOBILE : EMBED_DESKTOP)
+/* A prévia embute sempre o viewport de desktop, inclusive no celular: como
+   miniatura, o que interessa é a forma da página inteira, e o layout mobile
+   dentro de uma caixa pequena mostra só o topo, cortado. Quem abrir em tela
+   cheia recebe o layout mobile, porque lá o iframe usa a largura real do
+   aparelho e o site decide sozinho. */
+const EMBED_DESKTOP = { width: 1440, height: 800 }
 
 /* O único impedimento real é mixed content: um iframe http:// dentro de uma
    página https:// é bloqueado pelo navegador, sem contorno do lado do cliente.
@@ -178,17 +178,19 @@ function useCanEmbed(url?: string) {
    O site continua ao vivo aqui; quem quiser usar abre em tela cheia. */
 function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpen: () => void }) {
   const box = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ scale: 0, viewport: EMBED_DESKTOP, height: 0 })
+  const [size, setSize] = useState({ scale: 0 })
   useEffect(() => {
     const node = box.current
     if (!node) return
-    /* A escala vem da largura; a altura do viewport embutido é derivada da altura
-       real da caixa, para o site preencher o espaço em vez de sobrar um vão. */
+    /* Escala de cobertura, como `object-fit: cover`: a maior entre as duas razões
+       preenche a caixa e recorta a sobra. Derivar a altura da caixa manteria o
+       enquadramento certo no desktop, mas no celular mostraria 1440x1335 da
+       página a 21% — legível em lugar nenhum. Assim o recorte é sempre o mesmo
+       canto superior esquerdo de um viewport de 1440x800. */
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
-      const viewport = embedWidth(width)
-      const scale = width / viewport
-      setSize({ scale, viewport, height: scale > 0 ? height / scale : 0 })
+      const scale = Math.max(width / EMBED_DESKTOP.width, height / EMBED_DESKTOP.height)
+      setSize({ scale })
     })
     observer.observe(node)
     return () => observer.disconnect()
@@ -200,7 +202,7 @@ function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpe
       /* `zoom` e não `transform: scale()`: o transform encolhe só o desenho e deixa a
          caixa de layout em 1440px, que transborda o card e — onde o recorte do
          overflow não vale para hit-test — rouba o clique dos botões ao lado. */
-      style={{ width: size.viewport, height: Math.max(size.height, 320), zoom: size.scale }}
+      style={{ width: EMBED_DESKTOP.width, height: EMBED_DESKTOP.height, zoom: size.scale }}
     />}
     <button className="project__embed-open" onClick={onOpen} data-cursor-text="ABRIR" aria-label={`Abrir ${title} em tela cheia`}>
       <span>ABRIR EM TELA CHEIA <b>⤢</b></span>
