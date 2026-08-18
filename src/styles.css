@@ -342,13 +342,9 @@ img { display: block; max-width: 100%; }
 .skill-tooltip__arrow { display: block; width: 10px; height: 10px; margin: -5px auto 0; background: var(--accent); transform: rotate(45deg); border-right: 1px solid var(--red); border-bottom: 1px solid var(--red); }
 
 /* projects */
-/* A perspectiva mora no transform do próprio elemento girado (ver .tilt-card),
-   e não aqui como propriedade do ancestral: a combinação `perspective` no pai +
-   `preserve-3d` no meio fazia o Chrome hit-testar os descendentes fora do lugar,
-   e todo clique nos botões do card caía no .tilt-card. */
-.project-tilt { position: relative; }
-.tilt-card { position: relative; }
-.tilt-card > :last-child { transform: perspective(1400px) rotateX(var(--tilt-x,0)) rotateY(var(--tilt-y,0)); transition: transform .15s ease; }
+.project-tilt { perspective: 1400px; }
+.tilt-card { position: relative; transform-style: preserve-3d; }
+.tilt-card > :last-child { transform: rotateX(var(--tilt-x,0)) rotateY(var(--tilt-y,0)); transition: transform .15s ease; }
 .tilt-shine { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: radial-gradient(circle at var(--shine-x,50%) var(--shine-y,50%), rgba(255,255,255,.18), transparent 32%); opacity: 0; transition: opacity .2s; }
 .tilt-card:hover .tilt-shine { opacity: 1; }
 .project { position: relative; padding: 32px; background: var(--secondary); border: 2px solid var(--accent); box-shadow: 7px 7px 0 var(--accent); overflow: hidden; }
@@ -357,13 +353,8 @@ img { display: block; max-width: 100%; }
 .project__number { font: 700 10px/1 var(--mono); color: var(--muted); }
 .tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .tags span { padding: 5px 9px; border: 1px solid var(--red); color: var(--red); font: 600 9px/1 var(--mono); letter-spacing: .1em; }
-/* Altura comum a todos os cards, igual à da imagem: assim o carrossel não pula
-   de tamanho a cada troca e nenhum card sobra espaço vazio. `min-height` e não
-   altura fixa para nunca cortar conteúdo em telas estreitas. */
-.project__body { display: grid; grid-template-columns: 1.15fr .85fr; gap: 34px; min-height: 330px; }
-/* A imagem acompanha a altura da linha em vez de ficar travada em 290px: nos
-   cards de texto curto ela cresce e ocupa o espaço que antes ficava vazio. */
-.project__image { height: auto; min-height: 290px; align-self: stretch; overflow: hidden; border: 1px solid var(--border); border-bottom: 6px solid var(--accent); background: var(--primary); }
+.project__body { display: grid; grid-template-columns: 1.15fr .85fr; gap: 34px; }
+.project__image { height: 290px; overflow: hidden; border: 1px solid var(--border); border-bottom: 6px solid var(--accent); background: var(--primary); }
 .project__image img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); transition: filter .4s, transform .5s; }
 .project:hover .project__image img { filter: grayscale(0); transform: scale(1.025); }
 .project__copy p { margin-top: 0; color: var(--muted); font-size: 14px; }
@@ -371,102 +362,6 @@ img { display: block; max-width: 100%; }
 .project__copy ul { padding: 0; margin: 0; list-style: none; }
 .project__copy li { display: flex; gap: 13px; margin: 13px 0; color: var(--muted); font: 500 11px/1.45 var(--mono); }
 .project__copy li b { color: var(--red); }
-.project__meta { display: flex; flex-direction: column; align-items: flex-end; gap: 11px; flex-shrink: 0; }
-.project__badge { display: inline-flex; align-items: center; gap: 7px; padding: 5px 9px; border: 1px solid var(--red); color: var(--red); font: 700 9px/1 var(--mono); letter-spacing: .12em; }
-.project__badge i { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: projectLive 1.5s ease-in-out infinite; }
-@keyframes projectLive { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.6); } }
-.project__image a { display: block; width: 100%; height: 100%; }
-/* Uma única linha de botões, repartida em partes iguais: um botão ocupa a
-   largura toda, três dividem em terços. Em duas linhas o card do Clube passava
-   dos 290px do resto e obrigava todos a crescer junto. */
-.project__live { display: flex; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
-.project__live-cta, .project__live-alt { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; padding: 0 10px; border: 2px solid; font: 700 10px/1 var(--mono); letter-spacing: .08em; text-align: center; text-decoration: none; white-space: nowrap; transition: transform .15s, box-shadow .15s, border-color .15s, color .15s; }
-.project__live-cta { border-color: var(--red); background: var(--red); color: #fff; box-shadow: 4px 4px 0 var(--accent); }
-.project__live-cta:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--accent); }
-.project__live-alt { border-color: var(--border-strong); background: var(--primary); color: var(--accent); }
-.project__live-alt:hover { border-color: var(--red); color: var(--red); }
-.project__live-note { grid-column: 1 / -1; margin: 4px 0 0; color: var(--muted); font: 500 9px/1.6 var(--mono); letter-spacing: .04em; }
-button.project__live-cta { cursor: none; }
-
-/* prévia ao vivo: iframe renderizado em viewport desktop e reduzido por escala.
-   Sem a altura fixa de 290px do .project__image, a caixa estica junto com a
-   coluna de texto — senão sobra um vão embaixo da prévia. */
-.project__image--live { position: relative; background: var(--primary); }
-.project__embed { position: absolute; inset: 0; overflow: hidden; }
-/* o iframe é só visual — a camada acima dele é quem recebe o clique */
-.project__embed iframe { position: absolute; top: 0; left: 0; border: 0; pointer-events: none; }
-.project__embed-open { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent; cursor: none; transition: background .2s; }
-.project__embed-open span { padding: 12px 18px; border: 2px solid var(--red); background: var(--red); color: #fff; font: 700 10px/1 var(--mono); letter-spacing: .12em; opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .2s; }
-.project__embed-open:hover { background: rgba(5, 5, 5, .45); }
-.project__embed-open:hover span, .project__embed-open:focus-visible span { opacity: 1; transform: translateY(0); }
-
-/* tela cheia */
-/* Abaixo do cursor customizado (99998/99999) e acima de todo o resto: com
-   z-index maior o painel cobria o cursor e ele sumia da tela. */
-.project-fullscreen { position: fixed; inset: 0; z-index: 99000; display: flex; flex-direction: column; background: var(--primary); }
-/* Aqui o conteúdo é um iframe cross-origin, que não entrega mousemove à página
-   mãe — o cursor customizado congelaria. Devolvemos o cursor nativo. */
-.project-fullscreen, .project-fullscreen * { cursor: auto; }
-.project-fullscreen__bar button, .project-fullscreen iframe { cursor: pointer; }
-.project-fullscreen__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 18px; border-bottom: 2px solid var(--border-strong); background: var(--secondary); }
-.project-fullscreen__bar span { display: inline-flex; align-items: center; gap: 9px; color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
-.project-fullscreen__bar span i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: projectLive 1.5s ease-in-out infinite; }
-.project-fullscreen__bar button { display: inline-flex; align-items: center; gap: 9px; padding: 10px 15px; border: 2px solid var(--border-strong); background: var(--primary); color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; cursor: none; transition: .15s; }
-.project-fullscreen__bar button:hover { border-color: var(--red); background: var(--red); color: #fff; }
-.project-fullscreen iframe { flex: 1; width: 100%; border: 0; background: #fff; }
-
-/* visualizador de código */
-.code-viewer { position: fixed; inset: 0; z-index: 99000; display: flex; flex-direction: column; background: var(--primary); }
-.code-viewer__bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 18px; border-bottom: 2px solid var(--border-strong); background: var(--secondary); }
-.code-viewer__bar span { display: inline-flex; align-items: center; gap: 9px; color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
-.code-viewer__bar span i { width: 7px; height: 7px; border-radius: 50%; background: var(--red); }
-.code-viewer__bar button { display: inline-flex; align-items: center; gap: 9px; padding: 10px 15px; border: 2px solid var(--border-strong); background: var(--primary); color: var(--accent); font: 700 10px/1 var(--mono); letter-spacing: .12em; cursor: none; transition: .15s; }
-.code-viewer__bar button:hover { border-color: var(--red); background: var(--red); color: #fff; }
-.code-viewer__tabs { display: flex; flex-wrap: wrap; gap: 0; border-bottom: 1px solid var(--border); background: var(--secondary); }
-.code-viewer__tabs button { padding: 12px 16px; border: 0; border-right: 1px solid var(--border); background: transparent; color: var(--muted); font: 700 9px/1 var(--mono); letter-spacing: .1em; cursor: none; transition: .15s; }
-.code-viewer__tabs button:hover { color: var(--accent); }
-.code-viewer__tabs button.active { background: var(--red); color: #fff; }
-.code-viewer__body { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 0; overflow: hidden; }
-.code-viewer__meta { grid-column: 2; padding: 24px; border-left: 1px solid var(--border); overflow-y: auto; }
-.code-viewer__path { display: inline-block; margin-bottom: 14px; padding: 6px 10px; border: 1px dashed var(--border-strong); color: var(--muted); font: 600 9px/1 var(--mono); letter-spacing: .05em; word-break: break-all; }
-.code-viewer__meta p { margin: 0; color: var(--muted); font: 500 11px/1.7 var(--mono); }
-.code-viewer__code { grid-column: 1; grid-row: 1; margin: 0; padding: 22px 0; overflow: auto; background: var(--primary); }
-.code-viewer__code code { display: block; font: 500 12px/1.75 var(--mono); }
-.code-line { display: flex; gap: 18px; padding: 0 22px; white-space: pre; }
-.code-line i { flex-shrink: 0; width: 22px; color: var(--muted); opacity: .5; font-style: normal; text-align: right; user-select: none; }
-.code-line em { font-style: normal; color: var(--accent); }
-.code-viewer__foot { margin: 0; padding: 12px 18px; border-top: 1px solid var(--border); color: var(--muted); font: 500 9px/1.6 var(--mono); letter-spacing: .04em; }
-
-/* figura em tela cheia (canvas do fluxo) */
-.code-viewer__figure { grid-column: 1; grid-row: 1; display: flex; align-items: center; justify-content: center; padding: 24px; overflow: auto; background: var(--secondary); }
-.code-viewer__figure img { max-width: 100%; max-height: 100%; object-fit: contain; border: 1px solid var(--border); }
-
-/* README renderizado */
-.code-viewer__doc { grid-column: 1; grid-row: 1; padding: 34px 40px 48px; overflow-y: auto; max-width: 860px; }
-.md-h1 { margin: 0 0 18px; font: 900 clamp(26px,3vw,40px)/1.05 var(--sans); letter-spacing: -.04em; text-transform: uppercase; color: var(--accent); }
-.md-h2 { margin: 42px 0 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border-strong); font: 800 17px/1.2 var(--sans); letter-spacing: -.01em; text-transform: uppercase; color: var(--accent); }
-.md-h3 { margin: 28px 0 12px; font: 700 11px/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
-.md-p { margin: 0 0 15px; color: var(--light); font: 400 14px/1.75 var(--sans); }
-.md-list { margin: 0 0 16px; padding-left: 20px; }
-.md-list li { margin: 7px 0; color: var(--light); font: 400 14px/1.7 var(--sans); }
-.md-hr { margin: 32px 0; border: 0; border-top: 1px solid var(--border); }
-.code-viewer__doc code { padding: 2px 6px; border: 1px solid var(--border); background: var(--secondary); color: var(--red); font: 600 12px/1.4 var(--mono); }
-.code-viewer__doc a { color: var(--red); text-decoration: underline; text-underline-offset: 3px; }
-.md-pre { margin: 0 0 20px; padding: 18px; overflow-x: auto; border: 1px solid var(--border-strong); background: var(--secondary); }
-.md-pre code { padding: 0; border: 0; background: none; color: var(--accent); font: 500 12px/1.7 var(--mono); white-space: pre; }
-.md-table-wrap { margin: 0 0 22px; overflow-x: auto; border: 1px solid var(--border-strong); }
-.md-table { width: 100%; border-collapse: collapse; }
-.md-table th { padding: 11px 14px; border-bottom: 2px solid var(--border-strong); background: var(--secondary); color: var(--accent); font: 700 9px/1.3 var(--mono); letter-spacing: .1em; text-transform: uppercase; text-align: left; white-space: nowrap; }
-.md-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); color: var(--light); font: 400 13px/1.55 var(--sans); vertical-align: top; }
-.md-table tr:last-child td { border-bottom: 0; }
-.tk-comment { color: var(--muted); opacity: .75; }
-.tk-string { color: #16a34a; }
-.tk-key { color: var(--red); font-weight: 700; }
-.tk-annot { color: #7c3aed; font-weight: 700; }
-.tk-num { color: #0284c7; }
-[data-theme="dark"] .tk-string { color: #4ade80; }
-[data-theme="dark"] .tk-num { color: #38bdf8; }
-[data-theme="dark"] .tk-annot { color: #a78bfa; }
 .project__controls { display: flex; justify-content: flex-end; align-items: center; gap: 16px; margin-top: 22px; font: 700 9px/1 var(--mono); }
 .project__controls div { display: flex; }.project__controls button, .certificate-controls button { width: 42px; height: 40px; border: 1px solid var(--border); background: var(--primary); transition: .15s; }
 .project__controls button:hover, .certificate-controls button:hover { border-color: var(--accent); color: var(--red); transform: translateY(-2px); }
@@ -513,16 +408,6 @@ button.project__live-cta { cursor: none; }
 .contact-copy > a { display: flex; align-items: flex-start; gap: 20px; margin: 0 0 24px; width: fit-content; }.contact-copy > a > i { width: 54px; height: 54px; flex: 0 0 54px; display: grid; place-items: center; border: 2px solid var(--accent); box-shadow: 5px 5px 0 var(--accent); background: var(--primary); font-style: normal; transition: .15s; }.contact-copy > a:hover > i { color: var(--red); transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--red); }.contact-copy > a > span { display: flex; flex-direction: column; color: var(--muted); }.contact-copy > a small { margin-bottom: 4px; color: var(--accent); font-weight: 700; }
 .contact-social { display: flex; align-items: center; gap: 22px; margin: 3px 0 0 74px; }.contact-social > span { font: 700 10px/1 var(--mono); }.contact-social a { color: var(--muted); transition: .15s; }.contact-social a:hover { color: var(--red); transform: translateY(-3px); }
 .contact-form { padding: 30px; background: var(--secondary); border: 2px solid var(--accent); box-shadow: 8px 8px 0 var(--accent); }.contact-form > h3 { margin: 0 0 26px; padding-bottom: 11px; border-bottom: 2px solid var(--border); font: 500 20px/1 var(--mono); letter-spacing: .12em; }.contact-form label { position: relative; display: block; margin-bottom: 24px; }.contact-form label span { position: absolute; z-index: 1; left: 16px; top: -9px; padding: 0 8px; background: var(--secondary); color: var(--muted); font: 500 9px/18px var(--mono); letter-spacing: .12em; }.contact-form input, .contact-form textarea { display: block; width: 100%; border: 2px solid var(--accent); border-radius: 0; outline: 0; background: transparent; padding: 15px; font-family: var(--mono); transition: .15s; }.contact-form input { height: 62px; }.contact-form textarea { resize: vertical; min-height: 165px; }.contact-form input:focus, .contact-form textarea:focus { border-color: var(--red); box-shadow: inset 4px 0 0 var(--red); }.contact-form button { width: 100%; height: 56px; display: flex; align-items: center; justify-content: center; gap: 12px; border: 2px solid var(--accent); background: var(--primary); box-shadow: 6px 6px 0 var(--accent); font: 700 12px/1 var(--mono); letter-spacing: .24em; transition: .12s; }.contact-form button:hover { background: var(--accent); color: var(--primary); transform: translate(-3px,-3px); box-shadow: 9px 9px 0 var(--red); }
-.contact-form button:disabled { opacity: .55; transform: none; box-shadow: 6px 6px 0 var(--accent); background: var(--primary); color: var(--accent); }
-.contact-form input:disabled, .contact-form textarea:disabled { opacity: .55; }
-/* Isca de spam: fora da tela e fora da navegação por teclado, nunca display:none,
-   que muitos robôs sabem ignorar. */
-.contact-form__trap { position: absolute !important; left: -9999px; width: 1px !important; height: 1px !important; opacity: 0; pointer-events: none; }
-.contact-form__status { margin: 16px 0 0; min-height: 0; font: 500 11px/1.6 var(--mono); letter-spacing: .04em; }
-.contact-form__status.is-sent { color: #16a34a; }
-.contact-form__status.is-error { color: var(--red); }
-.contact-form__status a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
-[data-theme="dark"] .contact-form__status.is-sent { color: #4ade80; }
 
 /* assistant rail */
 .assistant-rail { position: fixed; z-index: 110; right: 0; top: 50%; transform: translateY(-50%); }.assistant-tab { width: 68px; height: 214px; display: flex; align-items: center; justify-content: center; gap: 13px; writing-mode: vertical-rl; transform: rotate(180deg); border: 0; border-left: 3px solid var(--accent); border-top: 3px solid var(--accent); border-bottom: 3px solid var(--accent); background: var(--primary); font: 800 11px/1 var(--mono); letter-spacing: .18em; }.assistant-tab span { transform: rotate(180deg); }.assistant-teaser { position: absolute; right: 68px; top: 74px; width: 170px; height: 30px; background: var(--primary); border: 2px solid var(--accent); font: 600 8px/1 var(--mono); letter-spacing: .1em; white-space: nowrap; }.assistant-teaser b { color: var(--red); }.assistant-panel { position: absolute; right: 67px; top: -150px; width: min(390px, calc(100vw - 78px)); height: 520px; display: flex; flex-direction: column; background: var(--primary); border: 2px solid var(--accent); box-shadow: -8px 8px 0 var(--accent); }.assistant-panel header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 2px solid var(--accent); }.assistant-panel header div { display: flex; flex-direction: column; font: 700 11px/1.4 var(--mono); }.assistant-panel header small { color: var(--red); }.assistant-panel header button { width: 28px; height: 28px; border: 1px solid var(--accent); background: transparent; }.assistant-messages { flex: 1; overflow-y: auto; padding: 16px; }.assistant-messages p { margin: 0 0 12px; padding: 10px; border: 1px solid var(--border); font: 500 11px/1.55 var(--mono); }.assistant-messages p.user { margin-left: 30px; background: var(--accent); color: var(--primary); }.zoro-prefix { color: var(--red); }.zoro-quick-replies { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 12px; }.zoro-quick-replies button { padding: 6px; border: 1px solid var(--border); background: transparent; font: 500 8px/1 var(--mono); }.assistant-panel > label { display: flex; border-top: 2px solid var(--accent); }.assistant-panel > label span { padding: 12px; }.assistant-panel > label input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; font: 500 10px/1 var(--mono); }.assistant-panel > label button { border: 0; background: var(--red); color: white; font: 700 9px/1 var(--mono); }
@@ -575,9 +460,6 @@ button.project__live-cta { cursor: none; }
   .header { height: 72px; }.header__inner { width: calc(100% - 30px); }.brand span, .terminal-trigger, .header__resume { display: none; }.header__tools { gap: 12px; }
   .hero { min-height: auto; padding-top: 130px; grid-template-columns: 1fr; gap: 20px; }.hero__content { max-width: none; }.hero h1 { font-size: clamp(49px,14vw,76px); }.hero__visual { height: 390px; order: -1; display: none; }.scroll-mark { display: none; }
   .journey { grid-template-columns: 1fr; gap: 32px; }.journey__tilt { position: relative; top: auto; }.journey__portrait { height: 520px; }.timeline { padding-left: 40px; }
-  .code-viewer__body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }.code-viewer__meta { grid-column: 1; grid-row: 1; padding: 18px; border-left: 0; border-bottom: 1px solid var(--border); }.code-viewer__code { grid-column: 1; grid-row: 2; }
-  /* Em coluna única o piso de altura só criaria vão morto. */
-  .project__body { min-height: 0; }
   .project__body, .certificate-card, .contact-grid { grid-template-columns: 1fr; }.project__image { height: 250px; }.certificate-card__image { min-height: 280px; border-right: 1px solid var(--border); border-bottom: 0; }.certificate-card__copy { padding: 28px; }.contact-grid { gap: 54px; }
   .assistant-teaser { display: none; }.assistant-tab { width: 54px; height: 142px; font-size: 9px; }.assistant-panel { right: 53px; top: -190px; }
   .scroll-rail { display: none; }
@@ -590,10 +472,7 @@ button.project__live-cta { cursor: none; }
   .section-heading { margin-bottom: 38px; }.section-heading h2 { font-size: 36px; }.section-heading > span { font-size: 13px; }
   .hero { padding-top: 115px; padding-bottom: 60px; }.hero h1 { font-size: 44px; }.hero h2 { font-size: 22px; min-height: 32px; }.hero__summary, .code-comment { font-size: 12px; }.visitors-badge { display: none!important; }.social-row a { flex: 1; min-width: 130px; justify-content: center; }.hero__actions { gap: 12px; margin-top: 32px; }.btn { min-width: 0; flex: 1; padding-inline: 12px; font-size: 9px; }
   .skills { min-height: 970px; }.skill-tabs { gap: 9px; padding: 0; }.skill-tabs button { font-size: 10px; }.skill-grid { gap: 16px 14px; padding: 0; }.skill-card { min-width: 112px; height: 52px; padding-inline: 13px; }.skill-card > b { font-size: 11px; }
-  .project { padding: 20px; box-shadow: 5px 5px 0 var(--accent); }.project__head { display: block; }.project__number { display: block; margin-top: 18px; }.project__meta { flex-direction: row; align-items: center; gap: 12px; margin-top: 18px; }.project__meta .project__number { margin-top: 0; }
-  /* Em 375px os três botões cabem por 4px; abaixo disso quebram em vez de
-     espremer o texto. A regra antiga era de grid e virou inócua com o flex. */
-  .project__live { flex-wrap: wrap; }.project__live-cta, .project__live-alt { flex: 1 1 100px; }.project__body { gap: 24px; }.project__image { height: 205px; }
+  .project { padding: 20px; box-shadow: 5px 5px 0 var(--accent); }.project__head { display: block; }.project__number { display: block; margin-top: 18px; }.project__body { gap: 24px; }.project__image { height: 205px; }
   .activity { min-height: 600px; }.activity-panel__head { align-items: flex-start; flex-direction: column; }.activity-scroll { padding: 24px 18px; }
   .journey__portrait { height: 430px; }.timeline { padding-left: 36px; }.timeline__head { flex-direction: column; }.timeline__head h3 { font-size: 18px; }.timeline__head > b { order: 2; }.timeline-item { margin-bottom: 32px; }
   .certificate-card { padding: 15px; }.certificate-card__image { min-height: 225px; }.certificate-card__copy { padding: 24px 18px; }.certificate-card__meta { flex-direction: column; }.certificate-card__copy > small { margin-top: 24px; }.certificate-controls > span { display: none; }

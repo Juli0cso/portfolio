@@ -6,8 +6,3 @@ dist
 vite.config.js
 vite.config.d.ts
 *.local
-
-# Variáveis de ambiente (o .env.example é versionado de propósito)
-.env
-.env.*
-!.env.example
