@@ -574,8 +574,10 @@ function ContactForm() {
     const form = event.currentTarget
     const data = new FormData(form)
 
-    /* Campo isca, invisível para gente e irresistível para robô de spam. */
-    if (data.get('website')) return
+    /* Campo isca, invisível para gente e irresistível para robô de spam. O nome
+       `_gotcha` é a convenção do Formspree, então ele também filtra do lado
+       dele — a checagem aqui vale para qualquer outro serviço. */
+    if (data.get('_gotcha')) return
 
     if (!CONTACT_ENDPOINT) return abrirEmail(data)
 
@@ -601,7 +603,7 @@ function ContactForm() {
     <label><span>[ NOME ]</span><input name="name" required disabled={enviando} /></label>
     <label><span>[ EMAIL_ADDRESS ]</span><input type="email" name="email" required disabled={enviando} /></label>
     <label><span>[ DATA_PAYLOAD ]</span><textarea name="message" rows={6} required disabled={enviando} /></label>
-    <input className="contact-form__trap" type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+    <input className="contact-form__trap" type="text" name="_gotcha" tabIndex={-1} autoComplete="off" aria-hidden="true" />
     <button type="submit" disabled={enviando}>
       {enviando ? '[ ENVIANDO... ]' : '[ SEND MESSAGE ]'} <ArrowIcon size={14} />
     </button>
