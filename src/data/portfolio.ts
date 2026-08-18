@@ -95,24 +95,6 @@ export const projects: Project[] = [
 export const certificates = [
   {
     index: '01',
-    title: 'Pacote Office Avançado',
-    issuer: 'Cursos ALFFA',
-    date: '2021 — 2022',
-    image: '/api/placeholder/certificate-office.svg',
-    description: 'Formação avançada nas principais ferramentas do Microsoft Office, com foco em produtividade, organização de dados, documentos profissionais e apresentações.',
-    tags: ['OFFICE', 'PRODUTIVIDADE', 'FERRAMENTAS'],
-  },
-  {
-    index: '02',
-    title: 'Informática Avançada',
-    issuer: 'Cursos ALFFA',
-    date: '2021 — 2022',
-    image: '/api/placeholder/certificate-it.svg',
-    description: 'Curso de informática avançada envolvendo sistemas operacionais, manutenção, configuração de computadores e uso técnico de ferramentas digitais.',
-    tags: ['HARDWARE', 'SISTEMAS', 'SUPORTE'],
-  },
-  {
-    index: '03',
     title: 'Agentes de IA com n8n',
     issuer: 'Rocketseat',
     date: '07/2026',
@@ -121,7 +103,16 @@ export const certificates = [
     tags: ['IA', 'N8N', 'AUTOMAÇÃO'],
   },
   {
-    index: '04',
+    index: '02',
+    title: 'Introdução à IoT e à Transformação Digital',
+    issuer: 'Cisco Networking Academy',
+    date: '06/2026',
+    image: '/certs/cisco_iot_cert.png',
+    description: 'Certificação abordando os conceitos fundamentais da Internet das Coisas (IoT) e o impacto da transformação digital, incluindo interconexão de dispositivos, otimização de processos baseada em dados e inovações no ambiente de negócios corporativos e industriais.',
+    tags: ['IOT', 'TRANSFORMAÇÃO DIGITAL', 'CISCO'],
+  },
+  {
+    index: '03',
     title: 'Fundamentos da Programação Web',
     issuer: 'Rocketseat',
     date: '05/2026',
@@ -130,7 +121,7 @@ export const certificates = [
     tags: ['WEB', 'FRONTEND', 'BACKEND'],
   },
   {
-    index: '05',
+    index: '04',
     title: 'Lógica de Programação',
     issuer: 'Rocketseat',
     date: '05/2026',
@@ -138,17 +129,27 @@ export const certificates = [
     description: 'Formação com 30 horas de carga horária focada no raciocínio lógico-computacional, cobrindo pseudocódigo, estruturas condicionais e de repetição, depuração, leitura de código e boas práticas (refatoração e recursividade).',
     tags: ['LÓGICA', 'ALGORITMOS', 'FUNDAMENTOS'],
   },
+  // Os dois da ALFFA fecham a lista: são os mais antigos e os únicos sem
+  // digitalização, então entram com capa desenhada em vez de foto.
+  {
+    index: '05',
+    title: 'Pacote Office Avançado',
+    issuer: 'Cursos ALFFA',
+    date: '2021 — 2022',
+    image: '/api/placeholder/certificate-office.svg',
+    description: 'Formação avançada nas principais ferramentas do Microsoft Office, com foco em produtividade, organização de dados, documentos profissionais e apresentações.',
+    tags: ['OFFICE', 'PRODUTIVIDADE', 'FERRAMENTAS'],
+  },
   {
     index: '06',
-    title: 'Introdução à IoT e à Transformação Digital',
-    issuer: 'Cisco Networking Academy',
-    date: '06/2026',
-    image: '/certs/cisco_iot_cert.png',
-    description: 'Certificação abordando os conceitos fundamentais da Internet das Coisas (IoT) e o impacto da transformação digital, incluindo interconexão de dispositivos, otimização de processos baseada em dados e inovações no ambiente de negócios corporativos e industriais.',
-    tags: ['IOT', 'TRANSFORMAÇÃO DIGITAL', 'CISCO'],
+    title: 'Informática Avançada',
+    issuer: 'Cursos ALFFA',
+    date: '2021 — 2022',
+    image: '/api/placeholder/certificate-it.svg',
+    description: 'Curso de informática avançada envolvendo sistemas operacionais, manutenção, configuração de computadores e uso técnico de ferramentas digitais.',
+    tags: ['HARDWARE', 'SISTEMAS', 'SUPORTE'],
   },
 ]
-
 export const experiences = [
   {
     role: 'Estagiário de Desenvolvimento Backend Java e DevOps', company: 'Defensoria Pública do Distrito Federal (DPDF)', date: '15/02/2026 — ATUAL', status: 'CURRENT', tone: '#22c55e',

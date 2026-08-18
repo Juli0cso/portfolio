@@ -380,8 +380,13 @@ export function Projects() {
   const canEmbed = useCanEmbed(project.link)
   const move = (step: number) => { setDirection(step); setActive((current) => (current + step + projects.length) % projects.length) }
   const pick = (step: number) => { setEngaged(true); move(step) }
-  useEffect(() => { if (paused || fullscreen || engaged) return; const timer = window.setInterval(() => move(1), 5000); return () => window.clearInterval(timer) }, [paused, active, fullscreen, engaged])
-  return <section id="projects" className="section shell" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}><SectionHeading index="02" eyebrow="PORTFOLIO" title="PROJETOS EM DESTAQUE" description="Sistemas em produção que eu construí e mantenho, ao lado de projetos conceituais das minhas áreas de atuação: backend, automação e sistemas embarcados." />
+  /* O relógio só corre com a seção à vista. Antes ele começava no carregamento
+     da página, então quem levasse alguns segundos rolando até aqui já chegava
+     com o carrossel adiantado — nunca no primeiro projeto. */
+  const section = useRef<HTMLElement>(null)
+  const sectionInView = useInView(section, { margin: '-25% 0px' })
+  useEffect(() => { if (paused || fullscreen || engaged || !sectionInView) return; const timer = window.setInterval(() => move(1), 35000); return () => window.clearInterval(timer) }, [paused, active, fullscreen, engaged, sectionInView])
+  return <section ref={section} id="projects" className="section shell" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}><SectionHeading index="02" eyebrow="PORTFOLIO" title="PROJETOS EM DESTAQUE" description="Sistemas em produção que eu construí e mantenho, ao lado de projetos conceituais das minhas áreas de atuação: backend, automação e sistemas embarcados." />
     <Reveal className="project-tilt" delay={.1} scale>
       <Tilt className="" max={2}><article className={`project project--${direction > 0 ? 'next' : 'prev'}`} key={project.title}>
       <div className="project__head"><div><h3>{project.title}</h3><div className="tags">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div><div className="project__meta">{project.link && <span className="project__badge"><i />LIVE</span>}<span className="project__number">PROJECT::{project.index}</span></div></div>
@@ -438,7 +443,7 @@ export function Certificates() {
         ) : (
           <img src={certificate.image} alt={`Placeholder do certificado ${certificate.title}`} loading="lazy" decoding="async" />
         )}
-        <span>IMAGE_SLOT::{certificate.index}</span>
+        <span>CERT::{certificate.index}</span>
       </div>
       <div className="certificate-card__copy"><div className="certificate-card__meta"><span>// {certificate.date}</span><b>[ VERIFIED_COURSE ]</b></div><small>{certificate.issuer}</small><h3>{certificate.title}</h3><i /><p>{certificate.description}</p><div className="tags">{certificate.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>
       <span className="certificate-card__corner certificate-card__corner--tl" /><span className="certificate-card__corner certificate-card__corner--br" />

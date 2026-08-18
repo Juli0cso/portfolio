@@ -1,9 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
-  <rect width="800" height="500" fill="#0b0b0b"/>
-  <path d="M26 84V26h58M716 26h58v58M774 416v58h-58M84 474H26v-58" fill="none" stroke="#ff3333" stroke-width="4"/>
-  <g fill="none" stroke="#333"><path d="M90 120h620M90 390h620"/><path d="M120 90v320M680 90v320"/></g>
-  <circle cx="400" cy="225" r="72" fill="none" stroke="#ff3333" stroke-width="5"/>
-  <path d="m366 225 24 24 48-52" fill="none" stroke="#f0f0f0" stroke-width="10"/>
-  <text x="400" y="335" text-anchor="middle" fill="#f0f0f0" font-family="monospace" font-size="26" font-weight="700">CERTIFICATE_IMAGE_01</text>
-  <text x="400" y="368" text-anchor="middle" fill="#777" font-family="monospace" font-size="14">SUBSTITUA PELA IMAGEM DO CERTIFICADO</text>
+<rect width="800" height="500" fill="#0b0b0b"/>
+<path d="M26 84V26h58M716 26h58v58M774 416v58h-58M84 474H26v-58" fill="none" stroke="#ff3333" stroke-width="4"/>
+<g fill="none" stroke="#242424"><path d="M90 120h620M90 390h620"/><path d="M120 90v320M680 90v320"/></g>
+<g transform="translate(400 158)">
+<circle r="34" fill="none" stroke="#ff3333" stroke-width="3"/>
+<circle r="25" fill="none" stroke="#3a3a3a" stroke-width="1.5"/>
+<path d="M-9 24 -15 46 0 39 15 46 9 24" fill="none" stroke="#ff3333" stroke-width="3" stroke-linejoin="round"/>
+<path d="M-12 -2 -3 8 13 -10" fill="none" stroke="#f0f0f0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<text x="400" y="324" text-anchor="middle" fill="#ff3333" font-family="monospace" font-size="15" font-weight="700" letter-spacing="3">CURSOS ALFFA</text>
+<text x="400" y="354" text-anchor="middle" fill="#6d6d6d" font-family="monospace" font-size="13" letter-spacing="2">2021 — 2022  ·  CARGA PRESENCIAL</text>
 </svg>
