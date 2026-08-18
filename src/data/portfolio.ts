@@ -1,3 +1,6 @@
+import { clubeSnippets, type CodeSnippet } from './clubeSnippets'
+import { n8nSnippets } from './n8nSnippets'
+
 export type Skill = { name: string; category: string; icon: string; tone?: string }
 
 export const skills: Skill[] = [
@@ -40,21 +43,49 @@ export const skills: Skill[] = [
   { name: 'Espanhol · Avançado', category: 'other', icon: 'ES', tone: '#dc2626' },
 ]
 
-export const projects = [
+export type Project = {
+  index: string
+  title: string
+  description: string
+  tags: string[]
+  image: string
+  highlights: string[]
+  /** URL do projeto no ar. Quando presente, o card exibe o selo LIVE e a prévia navegável. */
+  link?: string
+  /** Rótulo do botão que abre a prévia em tela cheia. */
+  linkLabel?: string
+  /** Links secundários (canal, repositório, etc.). */
+  extraLinks?: { label: string; href: string }[]
+  /** Trechos de código exibidos no visualizador. Curados e revisados à mão. */
+  codeSnippets?: CodeSnippet[]
+}
+
+export const projects: Project[] = [
   {
-    index: '01', title: 'API RESTful com Spring Boot',
+    index: '01', title: 'Clube da Economia',
+    description: 'Plataforma de garimpo de promoções em produção: o n8n coleta os anúncios, uma API REST em Spring Boot valida e guarda o histórico em Postgres, e a mesma oferta sai na vitrine em React e no canal do Telegram.',
+    tags: ['EM PRODUÇÃO', 'SPRING BOOT', 'JAVA', 'POSTGRES', 'DOCKER', 'N8N'], image: '/api/placeholder/project-clube.svg',
+    highlights: ['API REST com integração OAuth ao Mercado Livre', 'Webhook autenticado recebendo as ofertas do n8n', 'Histórico auditado por trigger no banco', 'Publicação automática no canal do Telegram'],
+    link: 'http://147.15.8.223/',
+    linkLabel: 'TELA CHEIA',
+    extraLinks: [{ label: 'VER CANAL', href: 'https://t.me/ClubDeconomia' }],
+    codeSnippets: clubeSnippets,
+  },
+  {
+    index: '02', title: 'Pipeline de Coleta com n8n',
+    description: 'Orquestração que alimenta o Clube da Economia: cinco rotinas independentes que coletam anúncios, geram links de afiliado, publicam no Telegram e mantêm a vitrine limpa — coordenadas pelo estado das linhas no banco, sem fila intermediária.',
+    tags: ['EM PRODUÇÃO', 'N8N', 'AUTOMAÇÃO', 'REDIS', 'SUPABASE'], image: '/api/placeholder/n8n-editor.png',
+    highlights: ['Parser duplo para os dois layouts do Mercado Livre', 'Coleta em lote com sessão reaproveitada no Redis', 'Publicação sorteada em janela de horário útil', 'Retomada por estado: cada etapa reprocessa sozinha'],
+    codeSnippets: n8nSnippets,
+  },
+  {
+    index: '03', title: 'API RESTful com Spring Boot',
     description: 'Criação e consumo de APIs e microsserviços integrados a bancos de dados SQL para rotinas corporativas.',
     tags: ['SPRING BOOT', 'JAVA', 'REST API', 'SQL'], image: '/api/placeholder/project-api.svg',
     highlights: ['Arquitetura de APIs escaláveis', 'Integração persistente com SQL', 'Rotinas corporativas desacopladas', 'Boas práticas de microsserviços'],
   },
   {
-    index: '02', title: 'Automação Corporativa com n8n',
-    description: 'Automação de fluxos de trabalho ágeis, integração de dados e scripts para otimização de infraestrutura.',
-    tags: ['N8N', 'AUTOMAÇÃO', 'BASH', 'DEVOPS'], image: '/api/placeholder/project-n8n.svg',
-    highlights: ['Orquestração visual de processos', 'Integração entre APIs e dados', 'Scripts de apoio operacional', 'Redução de tarefas repetitivas'],
-  },
-  {
-    index: '03', title: 'Robótica e IoT com ESP32',
+    index: '04', title: 'Robótica e IoT com ESP32',
     description: 'Integração de hardware envolvendo microcontroladores, monitoramento serial, módulos e sensores ultrassônicos de 4 pinos.',
     tags: ['ESP32', 'ARDUINO', 'IOT', 'SENSORES'], image: '/api/placeholder/project-iot.svg',
     highlights: ['Leitura de sensores em tempo real', 'Monitoramento via porta serial', 'Integração de módulos eletrônicos', 'Prototipagem com microcontroladores'],
@@ -64,24 +95,6 @@ export const projects = [
 export const certificates = [
   {
     index: '01',
-    title: 'Pacote Office Avançado',
-    issuer: 'Cursos ALFFA',
-    date: '2021 — 2022',
-    image: '/api/placeholder/certificate-office.svg',
-    description: 'Formação avançada nas principais ferramentas do Microsoft Office, com foco em produtividade, organização de dados, documentos profissionais e apresentações.',
-    tags: ['OFFICE', 'PRODUTIVIDADE', 'FERRAMENTAS'],
-  },
-  {
-    index: '02',
-    title: 'Informática Avançada',
-    issuer: 'Cursos ALFFA',
-    date: '2021 — 2022',
-    image: '/api/placeholder/certificate-it.svg',
-    description: 'Curso de informática avançada envolvendo sistemas operacionais, manutenção, configuração de computadores e uso técnico de ferramentas digitais.',
-    tags: ['HARDWARE', 'SISTEMAS', 'SUPORTE'],
-  },
-  {
-    index: '03',
     title: 'Agentes de IA com n8n',
     issuer: 'Rocketseat',
     date: '07/2026',
@@ -90,7 +103,16 @@ export const certificates = [
     tags: ['IA', 'N8N', 'AUTOMAÇÃO'],
   },
   {
-    index: '04',
+    index: '02',
+    title: 'Introdução à IoT e à Transformação Digital',
+    issuer: 'Cisco Networking Academy',
+    date: '06/2026',
+    image: '/certs/cisco_iot_cert.png',
+    description: 'Certificação abordando os conceitos fundamentais da Internet das Coisas (IoT) e o impacto da transformação digital, incluindo interconexão de dispositivos, otimização de processos baseada em dados e inovações no ambiente de negócios corporativos e industriais.',
+    tags: ['IOT', 'TRANSFORMAÇÃO DIGITAL', 'CISCO'],
+  },
+  {
+    index: '03',
     title: 'Fundamentos da Programação Web',
     issuer: 'Rocketseat',
     date: '05/2026',
@@ -99,7 +121,7 @@ export const certificates = [
     tags: ['WEB', 'FRONTEND', 'BACKEND'],
   },
   {
-    index: '05',
+    index: '04',
     title: 'Lógica de Programação',
     issuer: 'Rocketseat',
     date: '05/2026',
@@ -107,17 +129,27 @@ export const certificates = [
     description: 'Formação com 30 horas de carga horária focada no raciocínio lógico-computacional, cobrindo pseudocódigo, estruturas condicionais e de repetição, depuração, leitura de código e boas práticas (refatoração e recursividade).',
     tags: ['LÓGICA', 'ALGORITMOS', 'FUNDAMENTOS'],
   },
+  // Os dois da ALFFA fecham a lista: são os mais antigos e os únicos sem
+  // digitalização, então entram com capa desenhada em vez de foto.
+  {
+    index: '05',
+    title: 'Pacote Office Avançado',
+    issuer: 'Cursos ALFFA',
+    date: '2021 — 2022',
+    image: '/api/placeholder/certificate-office.svg',
+    description: 'Formação avançada nas principais ferramentas do Microsoft Office, com foco em produtividade, organização de dados, documentos profissionais e apresentações.',
+    tags: ['OFFICE', 'PRODUTIVIDADE', 'FERRAMENTAS'],
+  },
   {
     index: '06',
-    title: 'Introdução à IoT e à Transformação Digital',
-    issuer: 'Cisco Networking Academy',
-    date: '06/2026',
-    image: '/certs/cisco_iot_cert.png',
-    description: 'Certificação abordando os conceitos fundamentais da Internet das Coisas (IoT) e o impacto da transformação digital, incluindo interconexão de dispositivos, otimização de processos baseada em dados e inovações no ambiente de negócios corporativos e industriais.',
-    tags: ['IOT', 'TRANSFORMAÇÃO DIGITAL', 'CISCO'],
+    title: 'Informática Avançada',
+    issuer: 'Cursos ALFFA',
+    date: '2021 — 2022',
+    image: '/api/placeholder/certificate-it.svg',
+    description: 'Curso de informática avançada envolvendo sistemas operacionais, manutenção, configuração de computadores e uso técnico de ferramentas digitais.',
+    tags: ['HARDWARE', 'SISTEMAS', 'SUPORTE'],
   },
 ]
-
 export const experiences = [
   {
     role: 'Estagiário de Desenvolvimento Backend Java e DevOps', company: 'Defensoria Pública do Distrito Federal (DPDF)', date: '15/02/2026 — ATUAL', status: 'CURRENT', tone: '#22c55e',
