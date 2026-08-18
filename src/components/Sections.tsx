@@ -548,6 +548,70 @@ export function Education() {
 }
 
 /* ─── Contact ────────────────────────────────────────────────────────────── */
+/* O formulário usava action="mailto:" com method="post": o navegador ou abre o
+   cliente de e-mail com o corpo embaralhado, ou não faz nada — e quem preencheu
+   sai achando que enviou. Aqui o envio é uma requisição de verdade.
+
+   O endereço do serviço vem de VITE_CONTACT_ENDPOINT (Formspree, Web3Forms e
+   afins aceitam FormData direto). Sem ele configurado, caímos num mailto bem
+   montado, que ao menos abre o e-mail já preenchido em vez de falhar calado. */
+const CONTACT_ENDPOINT = import.meta.env.VITE_CONTACT_ENDPOINT as string | undefined
+const CONTACT_EMAIL = 'jc.nizuu@gmail.com'
+
+type SendState = 'idle' | 'sending' | 'sent' | 'error'
+
+function ContactForm() {
+  const [state, setState] = useState<SendState>('idle')
+
+  const abrirEmail = (data: FormData) => {
+    const assunto = `Contato pelo portfólio — ${data.get('name')}`
+    const corpo = `${data.get('message')}\n\n—\n${data.get('name')}\n${data.get('email')}`
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`
+  }
+
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    const data = new FormData(form)
+
+    /* Campo isca, invisível para gente e irresistível para robô de spam. */
+    if (data.get('website')) return
+
+    if (!CONTACT_ENDPOINT) return abrirEmail(data)
+
+    setState('sending')
+    try {
+      const response = await fetch(CONTACT_ENDPOINT, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: data,
+      })
+      if (!response.ok) throw new Error(String(response.status))
+      form.reset()
+      setState('sent')
+    } catch {
+      setState('error')
+    }
+  }
+
+  const enviando = state === 'sending'
+
+  return <form className="contact-form" onSubmit={submit} noValidate={false}>
+    <h3>SEND MESSAGE</h3>
+    <label><span>[ NOME ]</span><input name="name" required disabled={enviando} /></label>
+    <label><span>[ EMAIL_ADDRESS ]</span><input type="email" name="email" required disabled={enviando} /></label>
+    <label><span>[ DATA_PAYLOAD ]</span><textarea name="message" rows={6} required disabled={enviando} /></label>
+    <input className="contact-form__trap" type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+    <button type="submit" disabled={enviando}>
+      {enviando ? '[ ENVIANDO... ]' : '[ SEND MESSAGE ]'} <ArrowIcon size={14} />
+    </button>
+    <p className={`contact-form__status is-${state}`} role="status" aria-live="polite">
+      {state === 'sent' && 'Mensagem enviada. Respondo assim que puder.'}
+      {state === 'error' && <>Não consegui enviar agora. Escreva direto para <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</>}
+    </p>
+  </form>
+}
+
 export function Contact() {
   return <section id="contact" className="section shell"><SectionHeading index="06" eyebrow="GET IN TOUCH" title="CONTACT ME" />
     <Reveal className="contact-grid" delay={.1}>
@@ -557,7 +621,7 @@ export function Contact() {
         <div className="contact-social"><span>CONNECT</span><a href="https://github.com/Juli0cso" target="_blank"><GithubIcon /></a><a href="https://www.linkedin.com/in/juli0cso/" target="_blank"><LinkedinIcon /></a></div>
       </Reveal>
       <Reveal direction="right" delay={.25} scale>
-        <form className="contact-form" action="mailto:jc.nizuu@gmail.com" method="post" encType="text/plain"><h3>SEND MESSAGE</h3><label><span>[ NOME ]</span><input name="name" required /></label><label><span>[ EMAIL_ADDRESS ]</span><input type="email" name="email" required /></label><label><span>[ DATA_PAYLOAD ]</span><textarea name="message" rows={6} required /></label><button type="submit">[ SEND MESSAGE ] <ArrowIcon size={14} /></button></form>
+        <ContactForm />
       </Reveal>
     </Reveal>
   </section>
