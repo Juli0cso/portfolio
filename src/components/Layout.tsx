@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useMotionValueEvent, useScroll, useSpring, useTransform } from 'framer-motion'
 import { GithubIcon, LinkedinIcon } from './Icons'
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -345,17 +345,23 @@ function MiniPlayer({ open, close }: { open: boolean; close: () => void }) {
 export function Header() {
   const [cmdPalette, setCmdPalette] = useState(false)
   const [yashTerminal, setYashTerminal] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+  /* framer já corre o listener de scroll numa única fila interna, batida por
+     rAF — dispensa o addEventListener('scroll', ...) manual que rodava fora
+     de sincronia com o resto das animações da página. */
+  const [scrolled, setScrolled] = useState(() => typeof window !== 'undefined' && window.scrollY > 50)
   const [player, setPlayer] = useState(false)
+  const { scrollY } = useScroll()
+  useMotionValueEvent(scrollY, 'change', (value) => {
+    setScrolled((prev) => { const next = value > 50; return prev === next ? prev : next })
+  })
 
   useEffect(() => {
-    const scroll = () => setScrolled(window.scrollY > 50)
     const key = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setCmdPalette(true) }
       if (event.key === 'Escape') { setCmdPalette(false); setYashTerminal(false) }
     }
-    scroll(); window.addEventListener('scroll', scroll, { passive: true }); window.addEventListener('keydown', key)
-    return () => { window.removeEventListener('scroll', scroll); window.removeEventListener('keydown', key) }
+    window.addEventListener('keydown', key)
+    return () => window.removeEventListener('keydown', key)
   }, [])
 
   return <><header className={`header ${scrolled ? 'header--scrolled' : ''}`}><div className="header__inner">
@@ -433,23 +439,38 @@ export function AssistantRail() {
 
 /* ─── Scroll rail ────────────────────────────────────────────────────────── */
 export function ScrollRail() {
-  const [progress, setProgress] = useState(0)
-  useEffect(() => { const update = () => setProgress(window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight)); update(); window.addEventListener('scroll', update, { passive: true }); return () => window.removeEventListener('scroll', update) }, [])
-  return <div className="scroll-rail"><span>SYS.SCROLL</span><div><i style={{ height: `${progress * 100}%` }} /></div><b>{String(Math.round(progress * 100)).padStart(2, '0')}%</b></div>
+  /* Barra ligada direto ao motion value: a escrita no DOM sai da rAF interna
+     do framer, sem passar pelo ciclo de render do React a cada tick de
+     scroll. Só o número percentual — que precisa virar texto — usa state, e
+     mesmo assim só re-renderiza quando o inteiro arredondado muda. */
+  const { scrollYProgress } = useScroll()
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 300, damping: 40, mass: .4 })
+  const heightPercent = useTransform(smoothProgress, (value) => `${Math.min(100, Math.max(0, value * 100))}%`)
+  const [percent, setPercent] = useState(0)
+  useMotionValueEvent(smoothProgress, 'change', (value) => {
+    const next = Math.round(Math.min(1, Math.max(0, value)) * 100)
+    setPercent((prev) => prev === next ? prev : next)
+  })
+  return <div className="scroll-rail"><span>SYS.SCROLL</span><div><motion.i style={{ height: heightPercent }} /></div><b>{String(percent).padStart(2, '0')}%</b></div>
 }
 
 /* ─── Vocabulário de entrada ─────────────────────────────────────────────────
    Uma curva e uma régua de disparo para o site inteiro, para as seções não
    entrarem cada uma com um tempo diferente.
 
-   REVEAL_EASE arranca rápido e assenta sem balanço, que casa com as bordas
-   duras do layout melhor que um easing simétrico.
+   REVEAL_SPRING troca a antiga curva de duração fixa (tween) por uma mola
+   levemente superamortecida: sem balanço no assentamento — a mesma leitura
+   "seca" de antes — mas ao contrário de um tween, uma mola herda a
+   velocidade de onde estava se for interrompida. Rolar pra cima e pra baixo
+   rápido reiniciava o tween do zero e dava um salto visível; a mola apenas
+   muda de direção suavemente, o que é a maior parte do que "não fluido"
+   queria dizer aqui.
 
    REVEAL_ROOT encurta a área de detecção só embaixo: a entrada dispara quando o
    elemento sobe 18% na tela, e a saída só ocorre depois que ele passou inteiro
    pelo topo. Como a saída acontece fora da vista, dá para rearmar a animação
    sem que o rearme apareça — é o que faz o efeito repetir ao subir e descer. */
-export const REVEAL_EASE = [0.16, 1, 0.3, 1] as const
+export const REVEAL_SPRING = { type: 'spring', stiffness: 170, damping: 26, mass: .9 } as const
 export const REVEAL_ROOT = '0px 0px -18% 0px'
 
 /* ─── Section heading ────────────────────────────────────────────────────── */
@@ -462,7 +483,7 @@ export function SectionHeading({ index, eyebrow, title, description }: { index: 
       className="section-heading"
       initial={{ opacity: 0, y: 26 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 26 }}
-      transition={inView ? { duration: .62, ease: REVEAL_EASE } : { duration: 0 }}
+      transition={inView ? REVEAL_SPRING : { duration: 0 }}
     >
       <p><i /><em>// {index}</em> — {eyebrow}</p>
       <h2 className="glitch-hover" data-text={title}>{title}</h2>
@@ -472,7 +493,7 @@ export function SectionHeading({ index, eyebrow, title, description }: { index: 
         style={{ transformOrigin: 'left center' }}
         initial={{ scaleX: 0 }}
         animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
-        transition={inView ? { duration: .5, delay: .18, ease: REVEAL_EASE } : { duration: 0 }}
+        transition={inView ? { ...REVEAL_SPRING, delay: .18 } : { duration: 0 }}
       />
       {description && <span>{description}</span>}
     </motion.div>
@@ -489,7 +510,7 @@ export function Divider() {
       className="divider shell"
       initial={{ opacity: 0, scaleX: 0 }}
       animate={inView ? { opacity: 1, scaleX: 1 } : { opacity: 0, scaleX: 0 }}
-      transition={inView ? { duration: .55, ease: REVEAL_EASE } : { duration: 0 }}
+      transition={inView ? REVEAL_SPRING : { duration: 0 }}
     >
       <i /><b /><i /><span />
     </motion.div>

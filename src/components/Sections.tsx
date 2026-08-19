@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useScroll, useSpring, useTransform } from 'framer-motion'
 import { Document, Page, pdfjs } from 'react-pdf'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
@@ -8,7 +8,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 import { certificates, experiences, projects, skills, type Skill } from '../data/portfolio'
 import type { CodeSnippet } from '../data/clubeSnippets'
 import { ArrowIcon, GithubIcon, LinkedinIcon, MailIcon, PhoneIcon } from './Icons'
-import { SectionHeading, REVEAL_EASE, REVEAL_ROOT } from './Layout'
+import { SectionHeading, REVEAL_SPRING, REVEAL_ROOT } from './Layout'
 import { DecodeText, Tilt, Typewriter } from './Effects'
 import { InteractiveCharacter } from './InteractiveCharacter'
 
@@ -34,7 +34,7 @@ function Reveal({ children, className = '', delay = 0, direction = 'up', scale =
       initial={hidden}
       animate={inView ? shown : hidden}
       /* O rearme é instantâneo porque ocorre fora da tela; só a entrada é animada. */
-      transition={inView ? { duration: .62, delay, ease: REVEAL_EASE } : { duration: 0 }}
+      transition={inView ? { ...REVEAL_SPRING, delay } : { duration: 0 }}
     >
       {children}
     </motion.div>
@@ -57,20 +57,32 @@ export function Hero() {
     return () => window.clearInterval(timer)
   }, [])
 
+  /* Parallax do hero: antes um listener de scroll cru lia getBoundingClientRect()
+     a cada evento nativo — leitura de layout síncrona, sem lote por frame — e
+     escrevia direto no style. useScroll já entrega o progresso pronto (0 no topo
+     da seção, 1 quando ela passa inteira pelo topo da viewport, igual à fórmula
+     antiga), e useSpring amortece esse valor: sem a mola, o parallax fica preso
+     1:1 ao delta do scroll, que em trackpad/mouse é discreto e passa a
+     impressão de "pulado" em vez de fluido. --hero-scale nunca foi lido por
+     nenhuma regra CSS — dead code removido junto. */
+  const { scrollYProgress } = useScroll({ target: section, offset: ['start start', 'end start'] })
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 300, damping: 40, mass: .4 })
+  const [desktop, setDesktop] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768)
   useEffect(() => {
-    const scroll = () => {
-      const node = section.current
-      if (!node || window.innerWidth < 768) return
-      const progress = Math.max(0, Math.min(1, -node.getBoundingClientRect().top / node.offsetHeight))
-      node.style.setProperty('--content-y', `${progress * -220}px`); node.style.setProperty('--visual-y', `${progress * -100}px`); node.style.setProperty('--decor-y', `${progress * 180}px`)
-      node.style.setProperty('--hero-scale', `${1 - progress * .08}`); node.style.setProperty('--hero-opacity', `${Math.max(0, 1 - progress * 1.34)}`)
-    }
-    scroll(); window.addEventListener('scroll', scroll, { passive: true }); return () => window.removeEventListener('scroll', scroll)
+    const query = window.matchMedia('(min-width: 768px)')
+    const update = () => setDesktop(query.matches)
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
   }, [])
+  const contentY = useTransform(smoothProgress, [0, 1], desktop ? [0, -220] : [0, 0])
+  const visualY = useTransform(smoothProgress, [0, 1], desktop ? [0, -100] : [0, 0])
+  const decorY = useTransform(smoothProgress, [0, 1], desktop ? [0, 180] : [0, 0])
+  const heroOpacity = useTransform(smoothProgress, [0, .75], desktop ? [1, 0] : [1, 1])
 
   return <section id="home" className="hero shell" ref={section}>
-    <div className="hero__decor"><i /><i /></div>
-    <div className="hero__content">
+    <div className="hero__decor"><motion.i style={{ rotate: 12, y: decorY }} /><motion.i style={{ rotate: -4, y: decorY }} /></div>
+    <motion.div className="hero__content" style={{ y: contentY, opacity: heroOpacity }}>
       <p className="eyebrow hero-enter">// SYSTEM.INIT</p>
       <h1 className="hero-enter"><DecodeText text="JÚLIO CÉSAR" /><span className="hero__surname">SOUSA OLIVEIRA</span></h1>
       <h2 className="hero-enter"><Typewriter words={['BACKEND JAVA', 'SPRING BOOT DEV', 'API ARCHITECT', 'DEVOPS & AUTOMATION']} /></h2>
@@ -87,8 +99,8 @@ export function Hero() {
       </div>
       <div className="hero__actions hero-enter"><a className="btn btn--dark glitch-click" href="#projects">EXPLORE_PROJECTS</a><a className="btn btn--red glitch-click" href="/curriculo-julio-cesar.pdf" target="_blank">VIEW_RESUME</a></div>
       <div className="hero__location hero-enter"><span>SYS.LOC: BRASÍLIA, DF</span><span>LAT: 15.8128° S</span><span>LNG: 47.9294° W</span></div>
-    </div>
-    <div className="hero__visual"><InteractiveCharacter /><div className="hero__index">JC&nbsp; /&nbsp; 08</div></div>
+    </motion.div>
+    <motion.div className="hero__visual" style={{ y: visualY }}><InteractiveCharacter /><div className="hero__index">JC&nbsp; /&nbsp; 08</div></motion.div>
     <a href="#skills" className="scroll-mark">SCROLL <i /></a>
   </section>
 }
