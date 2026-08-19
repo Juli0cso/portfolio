@@ -8,7 +8,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 import { certificates, experiences, projects, skills, type Skill } from '../data/portfolio'
 import type { CodeSnippet } from '../data/clubeSnippets'
 import { ArrowIcon, GithubIcon, LinkedinIcon, MailIcon, PhoneIcon } from './Icons'
-import { SectionHeading } from './Layout'
+import { SectionHeading, REVEAL_EASE, REVEAL_ROOT } from './Layout'
 import { DecodeText, Tilt, Typewriter } from './Effects'
 import { InteractiveCharacter } from './InteractiveCharacter'
 
@@ -17,26 +17,24 @@ function Reveal({ children, className = '', delay = 0, direction = 'up', scale =
   children: ReactNode; className?: string; delay?: number; direction?: 'up' | 'down' | 'left' | 'right'; scale?: boolean
 }) {
   const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const inView = useInView(ref, { margin: REVEAL_ROOT })
   const axis = direction === 'left' || direction === 'right' ? 'x' : 'y'
   const sign = direction === 'down' || direction === 'right' ? -1 : 1
+
+  /* Deslocamento curto e sem blur: o desfoque custa repintura a cada quadro e
+     borra as bordas duras que definem o visual. Opacidade e transform bastam,
+     e rodam na composição. */
+  const hidden = { opacity: 0, [axis]: 24 * sign, ...(scale ? { scale: .985 } : {}) }
+  const shown = { opacity: 1, [axis]: 0, ...(scale ? { scale: 1 } : {}) }
+
   return (
     <motion.div
       ref={ref}
       className={className}
-      initial={{
-        opacity: 0,
-        [axis]: 40 * sign,
-        filter: 'blur(6px)',
-        ...(scale ? { scale: .95 } : {}),
-      }}
-      animate={inView ? {
-        opacity: 1,
-        [axis]: 0,
-        filter: 'blur(0px)',
-        ...(scale ? { scale: 1 } : {}),
-      } : {}}
-      transition={{ duration: .6, delay, ease: [.25, .1, .25, 1] }}
+      initial={hidden}
+      animate={inView ? shown : hidden}
+      /* O rearme é instantâneo porque ocorre fora da tela; só a entrada é animada. */
+      transition={inView ? { duration: .62, delay, ease: REVEAL_EASE } : { duration: 0 }}
     >
       {children}
     </motion.div>

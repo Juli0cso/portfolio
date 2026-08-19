@@ -78,18 +78,6 @@ export const projects: Project[] = [
     highlights: ['Parser duplo para os dois layouts do Mercado Livre', 'Coleta em lote com sessão reaproveitada no Redis', 'Publicação sorteada em janela de horário útil', 'Retomada por estado: cada etapa reprocessa sozinha'],
     codeSnippets: n8nSnippets,
   },
-  {
-    index: '03', title: 'API RESTful com Spring Boot',
-    description: 'Criação e consumo de APIs e microsserviços integrados a bancos de dados SQL para rotinas corporativas.',
-    tags: ['SPRING BOOT', 'JAVA', 'REST API', 'SQL'], image: '/api/placeholder/project-api.svg',
-    highlights: ['Arquitetura de APIs escaláveis', 'Integração persistente com SQL', 'Rotinas corporativas desacopladas', 'Boas práticas de microsserviços'],
-  },
-  {
-    index: '04', title: 'Robótica e IoT com ESP32',
-    description: 'Integração de hardware envolvendo microcontroladores, monitoramento serial, módulos e sensores ultrassônicos de 4 pinos.',
-    tags: ['ESP32', 'ARDUINO', 'IOT', 'SENSORES'], image: '/api/placeholder/project-iot.svg',
-    highlights: ['Leitura de sensores em tempo real', 'Monitoramento via porta serial', 'Integração de módulos eletrônicos', 'Prototipagem com microcontroladores'],
-  },
 ]
 
 export const certificates = [
