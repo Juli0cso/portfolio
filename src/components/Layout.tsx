@@ -438,21 +438,42 @@ export function ScrollRail() {
   return <div className="scroll-rail"><span>SYS.SCROLL</span><div><i style={{ height: `${progress * 100}%` }} /></div><b>{String(Math.round(progress * 100)).padStart(2, '0')}%</b></div>
 }
 
+/* ─── Vocabulário de entrada ─────────────────────────────────────────────────
+   Uma curva e uma régua de disparo para o site inteiro, para as seções não
+   entrarem cada uma com um tempo diferente.
+
+   REVEAL_EASE arranca rápido e assenta sem balanço, que casa com as bordas
+   duras do layout melhor que um easing simétrico.
+
+   REVEAL_ROOT encurta a área de detecção só embaixo: a entrada dispara quando o
+   elemento sobe 18% na tela, e a saída só ocorre depois que ele passou inteiro
+   pelo topo. Como a saída acontece fora da vista, dá para rearmar a animação
+   sem que o rearme apareça — é o que faz o efeito repetir ao subir e descer. */
+export const REVEAL_EASE = [0.16, 1, 0.3, 1] as const
+export const REVEAL_ROOT = '0px 0px -18% 0px'
+
 /* ─── Section heading ────────────────────────────────────────────────────── */
 export function SectionHeading({ index, eyebrow, title, description }: { index: string; eyebrow: string; title: string; description?: string }) {
   const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const inView = useInView(ref, { margin: REVEAL_ROOT })
   return (
     <motion.div
       ref={ref}
       className="section-heading"
-      initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
-      animate={inView ? { opacity: 1, y: 0, filter: 'blur(0px)' } : {}}
-      transition={{ duration: .65, ease: 'easeOut' }}
+      initial={{ opacity: 0, y: 26 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 26 }}
+      transition={inView ? { duration: .62, ease: REVEAL_EASE } : { duration: 0 }}
     >
       <p><i /><em>// {index}</em> — {eyebrow}</p>
       <h2 className="glitch-hover" data-text={title}>{title}</h2>
-      <b />
+      {/* A régua vermelha risca da esquerda logo depois do título assentar:
+          gesto mecânico, no lugar de um fade genérico. */}
+      <motion.b
+        style={{ transformOrigin: 'left center' }}
+        initial={{ scaleX: 0 }}
+        animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
+        transition={inView ? { duration: .5, delay: .18, ease: REVEAL_EASE } : { duration: 0 }}
+      />
       {description && <span>{description}</span>}
     </motion.div>
   )
@@ -461,14 +482,14 @@ export function SectionHeading({ index, eyebrow, title, description }: { index: 
 /* ─── Divider ────────────────────────────────────────────────────────────── */
 export function Divider() {
   const ref = useRef(null)
-  const inView = useInView(ref, { once: true, margin: '-40px' })
+  const inView = useInView(ref, { margin: REVEAL_ROOT })
   return (
     <motion.div
       ref={ref}
       className="divider shell"
       initial={{ opacity: 0, scaleX: 0 }}
-      animate={inView ? { opacity: 1, scaleX: 1 } : {}}
-      transition={{ duration: .5, ease: 'easeOut' }}
+      animate={inView ? { opacity: 1, scaleX: 1 } : { opacity: 0, scaleX: 0 }}
+      transition={inView ? { duration: .55, ease: REVEAL_EASE } : { duration: 0 }}
     >
       <i /><b /><i /><span />
     </motion.div>
