@@ -1,0 +1,10 @@
+# node_modules do host é compilado para outro sistema operacional. Copiado por
+# cima do que a imagem instalou, quebra módulos nativos como o canvas.
+node_modules
+dist
+
+.git
+.github
+.claude
+*.log
+*.tsbuildinfo
