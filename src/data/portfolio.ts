@@ -66,7 +66,7 @@ export const projects: Project[] = [
     description: 'Plataforma de garimpo de promoções em produção: o n8n coleta os anúncios, uma API REST em Spring Boot valida e guarda o histórico em Postgres, e a mesma oferta sai na vitrine em React e no canal do Telegram.',
     tags: ['EM PRODUÇÃO', 'SPRING BOOT', 'JAVA', 'POSTGRES', 'DOCKER', 'N8N'], image: '/api/placeholder/project-clube.svg',
     highlights: ['API REST com integração OAuth ao Mercado Livre', 'Webhook autenticado recebendo as ofertas do n8n', 'Histórico auditado por trigger no banco', 'Publicação automática no canal do Telegram'],
-    link: 'http://147.15.8.223/',
+    link: 'https://clubedaeconomia.tech/',
     linkLabel: 'TELA CHEIA',
     extraLinks: [{ label: 'VER CANAL', href: 'https://t.me/ClubDeconomia' }],
     codeSnippets: clubeSnippets,
