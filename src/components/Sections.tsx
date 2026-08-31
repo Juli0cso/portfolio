@@ -209,10 +209,22 @@ function LivePreview({ src, title, onOpen }: { src: string; title: string; onOpe
     {size.scale > 0 && <iframe
       src={src} title={title} loading="lazy" referrerPolicy="no-referrer" tabIndex={-1} aria-hidden="true"
       sandbox="allow-scripts allow-same-origin allow-forms"
-      /* `zoom` e não `transform: scale()`: o transform encolhe só o desenho e deixa a
-         caixa de layout em 1440px, que transborda o card e — onde o recorte do
-         overflow não vale para hit-test — rouba o clique dos botões ao lado. */
-      style={{ width: EMBED_DESKTOP.width, height: EMBED_DESKTOP.height, zoom: size.scale }}
+      /* `transform: scale()` e não `zoom`. O zoom é ambíguo entre motores: no
+         Safari do iPhone o documento interno acaba enxergando a largura visual
+         (~500px) em vez dos 1440px pedidos, e o site cai no próprio layout
+         mobile — exatamente o que a prévia não deve mostrar. O transform nunca
+         mexe no tamanho de layout, então o viewport interno é sempre 1440px.
+
+         A caixa de layout continua transbordando o card, que foi o motivo de eu
+         ter trocado para zoom antes. Isso deixou de importar: o iframe é
+         `pointer-events: none` e a camada de clique fica por cima, então o
+         transbordo não rouba mais clique de ninguém. */
+      style={{
+        width: EMBED_DESKTOP.width,
+        height: EMBED_DESKTOP.height,
+        transform: `scale(${size.scale})`,
+        transformOrigin: '0 0',
+      }}
     />}
     <button className="project__embed-open" onClick={onOpen} data-cursor-text="ABRIR" aria-label={`Abrir ${title} em tela cheia`}>
       <span>ABRIR EM TELA CHEIA <b>⤢</b></span>
