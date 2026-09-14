@@ -201,19 +201,92 @@ img { display: block; max-width: 100%; }
   letter-spacing: .04em;
   white-space: nowrap;
 }
-.loading-screen__line {
+.loading-screen__bar {
   position: relative;
-  height: 1px;
-  margin-top: 24px;
-  background: #222;
+  height: 4px;
+  margin-top: 26px;
+  background: #161616;
+  overflow: hidden;
 }
-.loading-screen__line i {
+.loading-screen__bar-fill {
   position: absolute;
   inset: 0;
+  transform-origin: left center;
+  /* A largura segue o progresso real, por isso a transição é curta. */
+  transition: transform .1s linear;
+  background: linear-gradient(90deg, #5c0d0d, #ff3333 62%, #fff);
+  will-change: transform;
+}
+.loading-screen__bar-head {
+  position: absolute;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 16px 4px rgba(255,51,51,.85);
+  transition: left .1s linear, opacity .3s ease;
+}
+.loading-screen__bar-ticks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+}
+.loading-screen__bar-ticks i {
+  width: 1px;
+  background: rgba(5,5,5,.85);
+}
+.loading-screen__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  color: #8d8d8d;
+  font: 500 clamp(.55rem, .8vw, .72rem)/1 var(--mono);
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+.loading-screen__status-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.loading-screen__status-clip {
   display: block;
-  height: 1px;
-  background: linear-gradient(90deg, #ff3333, #fff, #ff3333);
-  box-shadow: 0 0 15px rgba(255,51,51,.8);
+  flex: none;
+  position: relative;
+  height: 1.45em;
+  white-space: nowrap;
+}
+.loading-screen__status-clip b {
+  display: block;
+  font-weight: 500;
+  line-height: 1.45em;
+}
+.loading-screen__status-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff3333;
+  animation: loaderPulse .9s ease-in-out infinite;
+}
+.loading-screen__status-dot[data-complete="true"] {
+  background: #4ade80;
+  animation: none;
+}
+.loading-screen__status-count {
+  flex: none;
+  color: #555;
+  letter-spacing: .16em;
+}
+@keyframes loaderPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .2; transform: scale(.6); }
 }
 .loading-screen__bottom {
   align-items: start;
@@ -575,13 +648,18 @@ button.project__live-cta { cursor: none; }
 @media (max-width: 640px) {
   .loading-screen__content { width: calc(100% - 32px); }
   .loading-screen__top { gap: 10px; }
-  .loading-screen__top h1 { font-size: clamp(2.75rem, 13vw, 4rem); }
-  .loading-screen__progress { font-size: clamp(1.5rem, 7vw, 2rem); }
-  .loading-screen__line { margin-top: 16px; }
-  .loading-screen__bottom { gap: 12px; padding-top: 14px; }
-  .loading-screen__roles { font-size: .5rem; line-height: 1.65; letter-spacing: .22em; }
+  /* Nome e porcentagem dividem a linha: no celular o par só cabe menor. */
+  .loading-screen__top h1 { font-size: clamp(1.9rem, 9.4vw, 3.2rem); }
+  .loading-screen__progress { font-size: clamp(1.05rem, 5.4vw, 1.6rem); }
+  .loading-screen__bar { margin-top: 18px; height: 5px; }
+  .loading-screen__bar-head { width: 12px; height: 12px; margin: -6px 0 0 -6px; }
+  .loading-screen__status { margin-top: 12px; gap: 10px; font-size: .5rem; letter-spacing: .16em; }
+  .loading-screen__status-count { font-size: .45rem; }
+  /* Empilhadas, as legendas param de disputar a mesma linha. */
+  .loading-screen__bottom { grid-template-columns: 1fr; gap: 8px; padding-top: 14px; }
+  .loading-screen__roles { font-size: clamp(.4rem, 2.2vw, .5rem); line-height: 1.4; letter-spacing: .18em; white-space: nowrap; }
   .loading-screen__roles b { padding-inline: .3em; }
-  .loading-screen__bottom small { font-size: .45rem; }
+  .loading-screen__bottom small { font-size: .45rem; text-align: left; }
 }
 
 @media (max-width: 900px) {
